@@ -4,59 +4,53 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Crucial for GitHub Pages deploying to an apex organization root (devstorm-tech.github.io)
+  base: '/', 
+
   plugins: [
     react(),
     tailwindcss()
   ],
+
   server: {
-    // Listen on all network interfaces
+    // Listen on all network interfaces (perfect for WSL environment setups)
     host: '0.0.0.0',
-    
-    // Use default Vite port or set custom
     port: 5173,
-    
-    // Automatically open browser when server starts
     open: true,
-    
-    // Configure CORS (important for API requests from other devices)
     cors: true,
     
-    // Enable HTTPS if needed (optional)
-    // https: false,
-    
-    // Watch for changes in these directories
+    // Watch for file modifications accurately over network drives/WSL environments
     watch: {
-      usePolling: true, // Useful for network drives or WSL
+      usePolling: true, 
     },
     
-    // Proxy configuration for API (if you have a backend)
+    // Proxy configuration for local API endpoints 
     proxy: {
       '/api': {
-        target: 'http://localhost:8000', // Your backend server
+        target: 'http://localhost:8000', // Points to your backend ecosystem
         changeOrigin: true,
         secure: false,
       }
     },
     
-    // Set headers for all responses
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
     },
     
-    // Increase timeout for slow connections
     hmr: {
       timeout: 30000
     }
   },
   
-  // Build configuration
   build: {
-    // Generate sourcemaps for debugging
     sourcemap: true,
+    minify: 'esbuild',
+    reportCompressedSize: true,
+    target: 'es2020',
     
-    // Optimize chunk size for network performance
+    // Optimized asset distribution mapping to bundle chunks cleanly 
     rollupOptions: {
       output: {
         manualChunks: {
@@ -64,19 +58,9 @@ export default defineConfig({
           'ui-vendor': ['@headlessui/react', '@heroicons/react'],
         }
       }
-    },
-    
-    // Show warnings in console
-    minify: 'esbuild',
-    
-    // Report chunk sizes
-    reportCompressedSize: true,
-    
-    // Build target
-    target: 'es2020',
+    }
   },
   
-  // Preview configuration (for testing builds)
   preview: {
     host: '0.0.0.0',
     port: 4173,
@@ -84,7 +68,6 @@ export default defineConfig({
     cors: true,
   },
   
-  // Resolve aliases for cleaner imports
   resolve: {
     alias: {
       '@': '/src',
