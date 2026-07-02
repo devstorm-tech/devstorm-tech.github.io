@@ -65,9 +65,9 @@ const About = () => {
         {
             id: 3,
             name: 'Habiba Hesham',
-            role: 'Full‑Stack Web Developer',
-            bio: 'Passionate about creating intuitive frontend experiences with React and robust backends with Laravel.',
-            skills: ['React', 'Laravel'],
+            role: 'Front-end Web Developer',
+            bio: 'Passionate about creating intuitive frontend experiences with React ',
+            skills: ['React'],
             image: '👩‍💻',
             color: 'about-avatar-green',
             social: {
@@ -91,9 +91,9 @@ const About = () => {
         {
             id: 5,
             name: 'Esraa Elshiekh',
-            role: 'Frontend Web Developer & Marketing Specialist',
-            bio: 'Combines technical expertise in React and Laravel with a strategic marketing mindset to grow the DevStorm community.',
-            skills: ['React', 'Laravel', 'Marketing'],
+            role: 'Front-end Developer',
+            bio: 'Combines technical expertise in React and Laravel to build polished frontend experiences for the DevStorm community.',
+            skills: ['React', 'Laravel'],
             image: '👩‍💻',
             color: 'about-avatar-orange',
             social: {

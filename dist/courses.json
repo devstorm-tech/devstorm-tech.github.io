@@ -1,0 +1,10 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "title": "React Basics",
+      "category": "Web",
+      "price": 0
+    }
+  ]
+}
