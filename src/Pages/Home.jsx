@@ -32,7 +32,6 @@ function Home() {
                 <Hero />
                 <Courses />
                 <Features />
-                <CTA />
             </main>
         </div>
     );

@@ -2,9 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Courses.css';
 
-// API base URL
-const API_BASE_URL = 'http://localhost:8000/api';
-
 // Utility Functions
 const formatPrice = (price) => {
   if (price === null || price === undefined) return '$0.00';
@@ -69,11 +66,17 @@ const NoResults = ({ message = "No courses found", subMessage = "Try adjusting y
   </div>
 );
 
+// Course Card – now uses WhatsApp join button
 const CourseCard = ({ course }) => {
   const price = getCoursePrice(course);
   const level = getCourseLevel(course);
-  const courseUrl = `/course/${course.id || course.slug}`;
   
+  // Build WhatsApp URL with course info
+  const getWhatsAppUrl = (course) => {
+    const message = `Hello, I would like to join the course: ${course.title} (${course.category}). Price: ${price.final}. Please provide me with more information.`;
+    return `https://wa.me/201554779311?text=${encodeURIComponent(message)}`;
+  };
+
   return (
     <div className={`courses-card ${course.color || 'courses-card-blue'}`}>
       <div className="courses-card-header">
@@ -133,9 +136,15 @@ const CourseCard = ({ course }) => {
           )}
           <span className="courses-price-new">{price.final}</span>
         </div>
-        <Link to={courseUrl} className="courses-card-btn">
-          View Course
-        </Link>
+        {/* WhatsApp join button */}
+        <a 
+          href={getWhatsAppUrl(course)}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="courses-card-btn courses-join-btn"
+        >
+          Join Course
+        </a>
       </div>
     </div>
   );
@@ -162,7 +171,7 @@ const Courses = () => {
   
   // State
   const [state, setState] = useState({
-    allCourses: [], // All courses loaded once
+    allCourses: [],
     categories: [],
     loading: true,
     error: null
@@ -175,11 +184,9 @@ const Courses = () => {
     sort: 'popular'
   });
   
-  // Filtered courses based on current filters
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [featuredCourses, setFeaturedCourses] = useState([]);
   
-  // Difficulty levels
   const difficultyLevels = [
     { id: 'all', name: 'All Levels', color: 'courses-level-all' },
     { id: 'beginner', name: 'Beginner', color: 'courses-level-beginner' },
@@ -187,26 +194,24 @@ const Courses = () => {
     { id: 'advanced', name: 'Advanced', color: 'courses-level-advanced' }
   ];
   
-  // Load all data once on mount
+  // Load data from local JSON file
   const loadData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      // Fetch all courses
-      const coursesResponse = await fetch(`${API_BASE_URL}/courses`);
-      if (!coursesResponse.ok) {
-        throw new Error(`Failed to fetch courses: ${coursesResponse.status}`);
+      const response = await fetch('/courses.json');
+      if (!response.ok) {
+        throw new Error(`Failed to load courses: ${response.status}`);
       }
       
-      const coursesData = await coursesResponse.json();
+      const jsonData = await response.json();
+      const courses = jsonData.courses || [];
       
-      if (!coursesData.success) {
-        throw new Error(coursesData.message || 'Invalid API response');
+      if (!Array.isArray(courses) || courses.length === 0) {
+        throw new Error('No courses found in the data file');
       }
       
-      const courses = coursesData.data?.courses || [];
-      
-      // Extract unique categories from courses
+      // Extract unique categories
       const uniqueCategories = {};
       courses.forEach(course => {
         const categoryName = course.category;
@@ -218,12 +223,10 @@ const Courses = () => {
         }
       });
       
-      // Create categories array
       const allCategories = [
         { id: 'all', name: 'All', count: courses.length }
       ];
       
-      // Add categories from unique categories
       Object.entries(uniqueCategories).forEach(([name, count]) => {
         allCategories.push({
           id: name.toLowerCase().replace(/\s+/g, '-'),
@@ -239,7 +242,6 @@ const Courses = () => {
         error: null
       });
       
-      // Set featured courses
       const featured = courses.filter(course => course.featured === true).slice(0, 3);
       setFeaturedCourses(featured);
       
@@ -277,12 +279,11 @@ const Courses = () => {
       }
     });
     
-    // Only update filters if they're different from initial state
     const hasChanges = Object.keys(newFilters).some(key => newFilters[key] !== filters[key]);
     if (hasChanges) {
       setFilters(newFilters);
     }
-  }, []); // Empty dependency array - runs only once on mount
+  }, []);
   
   // Apply filters whenever filters or allCourses change
   useEffect(() => {
@@ -290,19 +291,16 @@ const Courses = () => {
     
     let filtered = [...state.allCourses];
     
-    // Category filter - show all if "All" is selected
     if (filters.category !== 'All') {
       filtered = filtered.filter(course => course.category === filters.category);
     }
     
-    // Difficulty filter
     if (filters.difficulty !== 'all') {
       filtered = filtered.filter(course => 
         (course.level || 'beginner').toLowerCase() === filters.difficulty
       );
     }
     
-    // Search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(course =>
@@ -313,7 +311,6 @@ const Courses = () => {
       );
     }
     
-    // Sort courses
     filtered.sort((a, b) => {
       switch (filters.sort) {
         case 'newest':
@@ -335,24 +332,20 @@ const Courses = () => {
     setFilteredCourses(filtered);
   }, [state.allCourses, filters]);
   
-  // Update URL when filters change - immediate update, no debounce
+  // Update URL when filters change
   useEffect(() => {
     if (isUpdatingURLRef.current) return;
     
     const params = new URLSearchParams();
-    
     if (filters.category !== 'All') {
       params.append('category', filters.category.toLowerCase());
     }
-    
     if (filters.search) {
       params.append('search', filters.search);
     }
-    
     if (filters.difficulty !== 'all') {
       params.append('difficulty', filters.difficulty);
     }
-    
     if (filters.sort !== 'popular') {
       params.append('sort', filters.sort);
     }
@@ -366,23 +359,19 @@ const Courses = () => {
         replace: true,
         state: { fromFilterChange: true }
       });
-      
-      // Reset the flag after navigation
       setTimeout(() => {
         isUpdatingURLRef.current = false;
       }, 100);
     }
   }, [filters, navigate, location.search]);
   
-  // Filter handlers - immediate update
+  // Filter handlers
   const updateFilter = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   }, []);
   
   const handleCategoryChange = useCallback((category) => {
-    // If clicking the same category, do nothing
     if (filters.category === category) return;
-    
     updateFilter('category', category);
   }, [filters.category, updateFilter]);
   
@@ -415,51 +404,28 @@ const Courses = () => {
     });
   }, []);
   
-  // Render active filters
   const renderActiveFilters = () => {
     const activeFilters = [];
-    
     if (filters.category !== 'All') {
-      activeFilters.push({
-        key: 'category',
-        label: `Category: ${filters.category}`
-      });
+      activeFilters.push({ key: 'category', label: `Category: ${filters.category}` });
     }
-    
     if (filters.difficulty !== 'all') {
       const difficulty = difficultyLevels.find(d => d.id === filters.difficulty);
-      activeFilters.push({
-        key: 'difficulty',
-        label: `Level: ${difficulty?.name || filters.difficulty}`
-      });
+      activeFilters.push({ key: 'difficulty', label: `Level: ${difficulty?.name || filters.difficulty}` });
     }
-    
     if (filters.search) {
-      activeFilters.push({
-        key: 'search',
-        label: `Search: "${filters.search}"`
-      });
+      activeFilters.push({ key: 'search', label: `Search: "${filters.search}"` });
     }
-    
     if (filters.sort !== 'popular') {
-      activeFilters.push({
-        key: 'sort',
-        label: `Sort: ${filters.sort}`
-      });
+      activeFilters.push({ key: 'sort', label: `Sort: ${filters.sort}` });
     }
-    
     if (activeFilters.length === 0) return null;
     
     return (
       <div className="courses-active-filters">
         <div className="courses-filters-header">
           <span className="courses-filters-label">Active Filters:</span>
-          <button 
-            onClick={clearAllFilters} 
-            className="courses-clear-all-btn"
-          >
-            Clear All
-          </button>
+          <button onClick={clearAllFilters} className="courses-clear-all-btn">Clear All</button>
         </div>
         <div className="courses-filters-list">
           {activeFilters.map(filter => (
@@ -482,22 +448,16 @@ const Courses = () => {
     );
   };
   
-  // Group courses by category for display
   const groupCoursesByCategory = () => {
     const grouped = {};
-    
     filteredCourses.forEach(course => {
       const category = course.category || 'Uncategorized';
-      if (!grouped[category]) {
-        grouped[category] = [];
-      }
+      if (!grouped[category]) grouped[category] = [];
       grouped[category].push(course);
     });
-    
     return grouped;
   };
   
-  // Render courses by category
   const renderCoursesByCategory = () => {
     if (filteredCourses.length === 0) {
       return (
@@ -510,7 +470,6 @@ const Courses = () => {
     }
     
     if (filters.category === 'All') {
-      // Group by category and show all categories
       const groupedCourses = groupCoursesByCategory();
       const categoriesToShow = state.categories
         .filter(cat => cat.name !== 'All' && groupedCourses[cat.name]?.length > 0)
@@ -518,7 +477,6 @@ const Courses = () => {
       
       return categoriesToShow.map(category => {
         const coursesInCategory = groupedCourses[category.name] || [];
-        
         return (
           <section key={category.id} className="courses-category-section">
             <div className="courses-category-header">
@@ -542,7 +500,6 @@ const Courses = () => {
         );
       });
     } else {
-      // Show all courses in selected category
       return (
         <section className="courses-category-section">
           <div className="courses-category-header">
@@ -567,7 +524,6 @@ const Courses = () => {
     }
   };
   
-  // Loading state
   if (state.loading) {
     return (
       <div className="courses-page">
@@ -578,7 +534,6 @@ const Courses = () => {
     );
   }
   
-  // Error state
   if (state.error) {
     return (
       <div className="courses-page">
@@ -623,10 +578,8 @@ const Courses = () => {
       </section>
       
       <div className="courses-container">
-        {/* Active Filters */}
         {renderActiveFilters()}
         
-        {/* Categories Filter */}
         <section className="courses-categories-section">
           <h2 className="courses-section-title">Browse by Category</h2>
           <div className="courses-categories">
@@ -643,10 +596,8 @@ const Courses = () => {
           </div>
         </section>
         
-        {/* Filters Section */}
         <section className="courses-filters-section">
           <div className="courses-filters-grid">
-            {/* Difficulty Filter */}
             <div className="courses-filter-group">
               <h3 className="courses-filter-title">Filter by Difficulty</h3>
               <div className="courses-levels">
@@ -662,7 +613,6 @@ const Courses = () => {
               </div>
             </div>
             
-            {/* Sort Filter */}
             <div className="courses-filter-group">
               <h3 className="courses-filter-title">Sort by</h3>
               <div className="courses-sort">
@@ -682,7 +632,7 @@ const Courses = () => {
           </div>
         </section>
         
-        {/* Featured Courses */}
+        {/* Featured Courses – now with WhatsApp Join button */}
         {featuredCourses.length > 0 && (
           <section className="courses-featured-section">
             <div className="courses-section-header">
@@ -692,6 +642,9 @@ const Courses = () => {
             <div className="courses-featured-grid">
               {featuredCourses.map(course => {
                 const price = getCoursePrice(course);
+                const whatsappUrl = `https://wa.me/201554779311?text=${encodeURIComponent(
+                  `Hello, I would like to join the featured course: ${course.title} (${course.category}). Price: ${price.final}. Please provide me with more information.`
+                )}`;
                 return (
                   <div key={course.id} className="courses-featured-card">
                     <div className="courses-featured-badge">Featured</div>
@@ -711,12 +664,14 @@ const Courses = () => {
                         )}
                         <span className="courses-price-new">{price.final}</span>
                       </div>
-                      <Link 
-                        to={`/course/${course.id}`} 
-                        className="courses-enroll-btn"
+                      <a 
+                        href={whatsappUrl}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="courses-enroll-btn courses-join-btn"
                       >
-                        Enroll Now
-                      </Link>
+                        Join Now
+                      </a>
                     </div>
                   </div>
                 );
@@ -725,7 +680,7 @@ const Courses = () => {
           </section>
         )}
         
-        {/* Courses Section */}
+        {/* All Courses Section */}
         <section className="courses-all-section">
           <div className="courses-section-header">
             <h2 className="courses-section-title">
@@ -735,42 +690,13 @@ const Courses = () => {
               </span>
             </h2>
           </div>
-          
           {renderCoursesByCategory()}
         </section>
         
-        {/* CTA Section */}
-        <section className="courses-cta-section">
-          <div className="courses-cta-card">
-            <div className="courses-cta-content">
-              <h2 className="courses-cta-title">Ready to Start Learning?</h2>
-              <p className="courses-cta-text">
-                Join thousands of developers who have transformed their careers with DevStorm.
-              </p>
-              <div className="courses-cta-buttons">
-                <button 
-                  className="courses-cta-btn courses-cta-btn-primary"
-                  onClick={clearAllFilters}
-                >
-                  Browse All Courses
-                </button>
-                <Link to="/signup" className="courses-cta-btn courses-cta-btn-outline">
-                  Create Free Account
-                </Link>
-              </div>
-            </div>
-            <div className="courses-cta-code">
-              <pre>
-                {`// Start your learning journey
-const developer = new Developer();
-DevStorm.transform(developer);`}
-              </pre>
-            </div>
-          </div>
-        </section>
+        {/* CTA Section has been removed as requested */}
       </div>
     </div>
   );
 };
 
-export default Courses
+export default Courses;

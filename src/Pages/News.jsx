@@ -5,64 +5,64 @@ import './News.css';
 const News = () => {
     const featuredArticle = {
         id: 1,
-        title: 'DevStorm Cloud Linux Now Available',
-        excerpt: 'We\'re excited to announce the official launch of DevStorm Cloud Linux (DCL), giving developers instant access to Linux environments in their browser.',
+        title: 'DevStorm Cloud Linux – Coming Soon: Practice Linux Online',
+        excerpt: 'We’re preparing to launch DevStorm Cloud Linux (DCL) – a fully functional Linux environment in your browser. Perfect for learning system administration, bash scripting, and server management. Early access available soon!',
         category: 'Announcement',
-        date: 'March 15, 2024',
-        readTime: '5 min read',
-        image: '📈',
+        date: 'April 1, 2025',
+        readTime: '4 min read',
+        image: '🐧',
         color: 'news-featured-blue'
     };
 
     const articles = [
         {
             id: 2,
-            title: 'Mastering React Hooks in 2024',
-            excerpt: 'Learn how to use the latest React hooks and best practices for building modern web applications.',
-            category: 'Tutorial',
-            date: 'March 10, 2024',
-            readTime: '8 min read',
-            image: '⚛️',
+            title: 'Security Testing Labs – Ethical Hacking Sandbox',
+            excerpt: 'Our upcoming Security Testing Labs will provide isolated environments to practice penetration testing, vulnerability assessment, and network security – all without risk to real systems.',
+            category: 'Update',
+            date: 'March 28, 2025',
+            readTime: '6 min read',
+            image: '🔐',
             color: 'news-article-purple'
         },
         {
             id: 3,
-            title: 'Security Testing Labs: New Features',
-            excerpt: 'Our security testing platform now includes advanced penetration testing tools and vulnerable applications.',
-            category: 'Update',
-            date: 'March 5, 2024',
-            readTime: '6 min read',
-            image: '🔒',
+            title: 'Track Progress – Measure Your Learning Journey',
+            excerpt: 'The new Track Progress feature will give you detailed analytics on your course completion, skill mastery, and daily activity – helping you stay motivated and focused.',
+            category: 'Feature',
+            date: 'March 20, 2025',
+            readTime: '5 min read',
+            image: '📊',
             color: 'news-article-green'
         },
         {
             id: 4,
-            title: 'Interview with Our Lead Developer',
-            excerpt: 'We sit down with Hussien Hazem to discuss modern web development trends and career advice.',
-            category: 'Interview',
-            date: 'February 28, 2024',
+            title: 'Certifications – Validate Your Skills',
+            excerpt: 'We’re developing a certification program that will allow you to earn recognised credentials after completing specific learning paths. Boost your resume with DevStorm certificates.',
+            category: 'Announcement',
+            date: 'March 15, 2025',
             readTime: '7 min read',
-            image: '🎤',
+            image: '📜',
             color: 'news-article-orange'
         },
         {
             id: 5,
-            title: 'Python 3.12 Performance Improvements',
-            excerpt: 'Discover how the latest Python version can speed up your applications by up to 15%.',
-            category: 'Technology',
-            date: 'February 20, 2024',
-            readTime: '10 min read',
-            image: '🐍',
+            title: 'DevStorm Cloud Storage – Secure Your Projects',
+            excerpt: 'Store and manage all your learning projects, code snippets, and course materials with DCS – a secure, integrated cloud storage solution coming soon to DevStorm.',
+            category: 'Update',
+            date: 'March 10, 2025',
+            readTime: '5 min read',
+            image: '☁️',
             color: 'news-article-red'
         },
         {
             id: 6,
-            title: 'Building REST APIs with Laravel',
-            excerpt: 'A comprehensive guide to creating scalable and secure REST APIs using Laravel.',
-            category: 'Tutorial',
-            date: 'February 15, 2024',
-            readTime: '12 min read',
-            image: '🚀',
+            title: 'Community Driven – Join the Conversation',
+            excerpt: 'Our new community features will include discussion forums, live Q&A sessions, and peer-to-peer mentorship. Connect with fellow learners and share your journey.',
+            category: 'Community',
+            date: 'March 5, 2025',
+            readTime: '4 min read',
+            image: '🤝',
             color: 'news-article-blue'
         }
     ];
@@ -70,32 +70,32 @@ const News = () => {
     const categories = [
         { name: 'All', count: 12 },
         { name: 'Announcements', count: 3 },
-        { name: 'Tutorials', count: 5 },
-        { name: 'Updates', count: 2 },
-        { name: 'Technology', count: 4 },
-        { name: 'Community', count: 2 }
+        { name: 'Updates', count: 4 },
+        { name: 'Features', count: 2 },
+        { name: 'Community', count: 2 },
+        { name: 'Technology', count: 1 }
     ];
 
     const popularTags = [
-        'React', 'JavaScript', 'Python', 'Laravel', 'Security',
-        'DevOps', 'Cloud', 'Web Development', 'AI', 'Career'
+        'Linux', 'Security', 'Certifications', 'Cloud', 'DevOps',
+        'Learning', 'Community', 'Projects', 'Career', 'Workshops'
     ];
 
     const newsletterArticles = [
         {
-            title: 'Monthly Developer Survey Results',
-            excerpt: 'See what technologies developers are most excited about in 2024.',
-            date: 'March 1, 2024'
+            title: 'Beta Access to Cloud Linux – Sign Up Now',
+            excerpt: 'Be among the first to test DCL and get early access to all upcoming features.',
+            date: 'April 2, 2025'
         },
         {
-            title: 'New Course: Advanced Node.js',
-            excerpt: 'Learn advanced Node.js patterns and performance optimization.',
-            date: 'February 25, 2024'
+            title: 'Security Labs: What to Expect',
+            excerpt: 'A sneak peek into the tools and environments we’re building for ethical hacking practice.',
+            date: 'March 30, 2025'
         },
         {
-            title: 'Community Spotlight: Student Projects',
-            excerpt: 'Amazing projects built by our community members.',
-            date: 'February 18, 2024'
+            title: 'Your Feedback Shapes Our Roadmap',
+            excerpt: 'We want to hear from you – what features would you like to see next? Take our survey.',
+            date: 'March 25, 2025'
         }
     ];
 

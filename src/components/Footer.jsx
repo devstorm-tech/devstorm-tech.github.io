@@ -4,18 +4,6 @@ import './Footer.css';
 const Footer = () => {
     const currentYear = new Date().getFullYear();
 
-    // Function to handle smooth scrolling for same-page links
-    const handleLinkClick = (e, sectionId) => {
-        e.preventDefault();
-        const element = document.getElementById(sectionId);
-        if (element) {
-            window.scrollTo({
-                top: element.offsetTop - 100,
-                behavior: 'smooth'
-            });
-        }
-    };
-
     return (
         <footer className="footer">
             <div className="footer-container">
@@ -26,79 +14,47 @@ const Footer = () => {
                             The ultimate platform for learning programming and advancing your tech career.
                         </p>
                         <div className="social-links">
+                            {/* Social links – copied exactly from your request */}
                             <a 
-                                href="https://instagram.com/devstorm.official" 
+                                href="https://www.facebook.com/share/1EMgssTxZ1/" 
+                                className="social-link" 
+                                aria-label="Facebook"
                                 target="_blank" 
                                 rel="noopener noreferrer"
+                            >
+                                <i className="fab fa-facebook"></i>
+                            </a>
+                            <a 
+                                href="https://vt.tiktok.com/ZSCuKBHw5/" 
+                                className="social-link" 
+                                aria-label="TikTok"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                            >
+                                <i className="fab fa-tiktok"></i>
+                            </a>
+                            <a 
+                                href="https://instagram.com/devstorm.official" 
+                                className="social-link" 
+                                aria-label="WhatsApp"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                            >
+                                <i className="fab fa-whatsapp"></i>
+                            </a>
+                            <a 
+                                href="https://wa.me/201554779311" 
+                                className="social-link" 
                                 aria-label="Instagram"
-                                className="social-link"
+                                target="_blank" 
+                                rel="noopener noreferrer"
                             >
                                 <i className="fab fa-instagram"></i>
                             </a>
-                            <a 
-                                href="https://github.com/devstorm" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                aria-label="GitHub"
-                                className="social-link"
-                            >
-                                <i className="fab fa-github"></i>
-                            </a>
-                            <a 
-                                href="https://discord.gg/devstorm" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                aria-label="Discord"
-                                className="social-link"
-                            >
-                                <i className="fab fa-discord"></i>
-                            </a>
-                            <a 
-                                href="https://youtube.com/devstorm" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                aria-label="YouTube"
-                                className="social-link"
-                            >
-                                <i className="fab fa-youtube"></i>
-                            </a>
                         </div>
                     </div>
-                    
-                    <div className="footer-column">
-                        <h3 className="footer-title">Courses</h3>
-                        <ul className="footer-links">
-                            <li><a href="/courses/web-development">Web Development</a></li>
-                            <li><a href="/courses/data-science">Data Science</a></li>
-                            <li><a href="/courses/mobile-apps">Mobile Apps</a></li>
-                            <li><a href="/courses/game-development">Game Development</a></li>
-                            <li><a href="/courses/cybersecurity">Cybersecurity</a></li>
-                        </ul>
-                    </div>
-                    
-                    <div className="footer-column">
-                        <h3 className="footer-title">Resources</h3>
-                        <ul className="footer-links">
-                            <li><a href="/docs">Documentation</a></li>
-                            <li><a href="/blog">Blog</a></li>
-                            <li><a href="/cheatsheets">Cheat Sheets</a></li>
-                            <li><a href="/interview-prep">Interview Prep</a></li>
-                            <li><a href="/career-guide">Career Guide</a></li>
-                        </ul>
-                    </div>
-                    
-                    <div className="footer-column">
-                        <h3 className="footer-title">Company</h3>
-                        <ul className="footer-links">
-                            <li><a href="/about">About Us</a></li>
-                            <li><a href="/careers">Careers</a></li>
-                            <li><a href="/contact">Contact</a></li>
-                            <li><a href="/privacy">Privacy Policy</a></li>
-                            <li><a href="/terms">Terms of Service</a></li>
-                        </ul>
-                    </div>
                 </div>
-                
+
                 <div className="copyright">
                     <p>&copy; {currentYear} DevStorm. All rights reserved. <span className="highlight">Censole 100</span></p>
                     <p className="signature">dv# D/v/&gt;</p>

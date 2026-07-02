@@ -16,35 +16,6 @@ import DvsStore from './Pages/Store';
 import MyProfile from './Pages/MyProfile';
 import SingleCourse from './Pages/SingleCourse';
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-    // Function to check if user is authenticated
-    const isAuthenticated = () => {
-        // Check cookies
-        const cookies = document.cookie.split('; ');
-        const authTokenCookie = cookies.find(row => row.startsWith('auth_token='));
-        const userDataCookie = cookies.find(row => row.startsWith('user_data='));
-        
-        // Check session storage
-        const sessionAuth = sessionStorage.getItem('auth_status');
-        const sessionUser = sessionStorage.getItem('user');
-        const sessionToken = sessionStorage.getItem('auth_token');
-        
-        // Check localStorage
-        const localStorageAuth = localStorage.getItem('auth_status');
-        const localStorageUser = localStorage.getItem('user');
-        
-        // Return true if authenticated in any storage
-        return (
-            (authTokenCookie && userDataCookie) ||
-            (sessionAuth === 'authenticated' && sessionUser && sessionToken) ||
-            (localStorageAuth === 'authenticated' && localStorageUser)
-        );
-    };
-
-    return isAuthenticated() ? children : <Navigate to="/login" />;
-};
-
 function App() {
     useEffect(() => {
         const link = document.createElement('link');
@@ -70,35 +41,11 @@ function App() {
                     <Route path="/store" element={<DvsStore />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-                    
-                    {/* Course Routes */}
-                    <Route path="/courses" element={
-                        <ProtectedRoute>
-                            <Courses />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/course/:id" element={
-                        <ProtectedRoute>
-                            <SingleCourse />
-                        </ProtectedRoute>
-                    } />
-                    
-                    {/* Other Protected Routes */}
-                    <Route path="/cloud-linux" element={
-                        <ProtectedRoute>
-                            <CloudLinux />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/compiler" element={
-                        <ProtectedRoute>
-                            <Compiler />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                        <ProtectedRoute>
-                            <MyProfile />
-                        </ProtectedRoute>
-                    } />
+                    <Route path="/courses" element={<Courses />} />
+                    <Route path="/course/:id" element={<SingleCourse />} />
+                    <Route path="/cloud-linux" element={<CloudLinux />} />
+                    <Route path="/compiler" element={<Compiler />} />
+                    <Route path="/profile" element={<MyProfile />} />
                     
                     {/* Redirect old /course route to courses page */}
                     <Route path="/course" element={<Navigate to="/courses" />} />
