@@ -1,0 +1,564 @@
+/* Auth Pages Shared Styles */
+.auth-page {
+    min-height: 100vh;
+    background-color: #0a0e17;
+    color: #ffffff;
+    font-family: 'Exo 2', sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding: 80px 0;
+}
+
+/* Background Gradients */
+.auth-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+}
+
+.gradient-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+}
+
+.gradient-1 {
+    top: 10%;
+    left: 5%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(0, 102, 255, 0.15) 0%, transparent 70%);
+}
+
+.gradient-2 {
+    bottom: 10%;
+    right: 5%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
+}
+
+.gradient-3 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0, 170, 255, 0.1) 0%, transparent 70%);
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.auth-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+    min-height: calc(100vh - 160px);
+}
+
+/* Left Side - Brand & Info */
+.auth-side {
+    padding-right: 30px;
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 40px;
+}
+
+.logo-icon {
+    color: #0066ff;
+    font-size: 32px;
+    position: relative;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+}
+
+.logo-icon:after {
+    content: ">";
+    position: absolute;
+    color: #00aaff;
+    right: -12px;
+    top: 0;
+    font-weight: bold;
+}
+
+.logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(to right, #0066ff, #00aaff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-side-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.auth-side-text {
+    color: #b0b7c3;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+.auth-features {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #b0b7c3;
+    font-size: 1rem;
+}
+
+.feature-item i {
+    color: #0066ff;
+    font-size: 1.2rem;
+    width: 24px;
+}
+
+.auth-benefits h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.benefits-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #b0b7c3;
+}
+
+.benefits-list i {
+    color: #00cc88;
+    font-size: 1.1rem;
+}
+
+/* Right Side - Form */
+.auth-main {
+    display: flex;
+    justify-content: center;
+}
+
+.auth-card {
+    background-color: rgba(20, 25, 40, 0.9);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-header h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.auth-header p {
+    color: #b0b7c3;
+    font-size: 1rem;
+}
+
+/* Form Styles */
+.auth-form {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-group label i {
+    color: #00aaff;
+    font-size: 0.9rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #0066ff;
+    background-color: rgba(0, 102, 255, 0.05);
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+.form-input::placeholder {
+    color: #6c757d;
+}
+
+.password-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 6px;
+}
+
+.password-hint i {
+    font-size: 0.8rem;
+}
+
+/* Form Options */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #b0b7c3;
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-input {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #0066ff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+    background-color: #0066ff;
+}
+
+.checkbox-input:checked + .checkbox-custom:after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.forgot-link {
+    color: #00aaff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+.terms-link {
+    color: #00aaff;
+    text-decoration: none;
+}
+
+.terms-link:hover {
+    text-decoration: underline;
+}
+
+/* Auth Button */
+.auth-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-family: 'Exo 2', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #0066ff, #00aaff);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 102, 255, 0.4);
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 30px 0;
+    color: #6c757d;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+    padding: 0 15px;
+    font-size: 0.9rem;
+}
+
+/* Social Login */
+.social-login {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.social-btn {
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.social-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.social-btn.github {
+    background-color: rgba(24, 23, 23, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.social-btn.google {
+    background-color: rgba(66, 133, 244, 0.1);
+    border-color: rgba(66, 133, 244, 0.3);
+    color: #4285f4;
+}
+
+/* Auth Footer */
+.auth-footer {
+    text-align: center;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-footer p {
+    color: #b0b7c3;
+    margin-bottom: 15px;
+}
+
+.auth-link {
+    color: #00aaff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+.back-link a {
+    color: #b0b7c3;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease;
+}
+
+.back-link a:hover {
+    color: #00aaff;
+}
+
+/* Code Snippet */
+.auth-code-snippet {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 102, 255, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.code-line {
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.line-number {
+    color: #8a2be2;
+    margin-right: 20px;
+    min-width: 25px;
+    user-select: none;
+}
+
+.code-keyword {
+    color: #0066ff;
+}
+
+.code-function {
+    color: #00aaff;
+}
+
+.code-string {
+    color: #00cc88;
+}
+
+.code-comment {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.code-text {
+    color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .auth-wrapper {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .auth-side {
+        padding-right: 0;
+        text-align: center;
+    }
+    
+    .auth-features {
+        align-items: center;
+    }
+    
+    .benefits-list {
+        display: inline-block;
+        text-align: left;
+    }
+    
+    .auth-card {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-page {
+        padding: 60px 0;
+    }
+    
+    .auth-side-title {
+        font-size: 2rem;
+    }
+    
+    .auth-card {
+        padding: 25px 20px;
+    }
+    
+    .social-login {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-header h2 {
+        font-size: 1.7rem;
+    }
+    
+    .auth-side-title {
+        font-size: 1.8rem;
+    }
+    
+    .logo-text {
+        font-size: 24px;
+    }
+    
+    .auth-features {
+        align-items: flex-start;
+    }
+}

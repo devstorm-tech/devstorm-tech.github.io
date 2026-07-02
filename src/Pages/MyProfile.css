@@ -1,0 +1,630 @@
+/* My Profile Page Styles - All classes prefixed with myprofile- */
+.myprofile-page {
+    background-color: #0a0e17;
+    color: #ffffff;
+    font-family: 'Exo 2', sans-serif;
+    padding-top: 80px; /* Space for fixed header */
+    min-height: 100vh;
+}
+
+.myprofile-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Loading State */
+.myprofile-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    gap: 20px;
+}
+
+.myprofile-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(0, 102, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #0066ff;
+    animation: myprofile-spin 1s linear infinite;
+}
+
+@keyframes myprofile-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Hero Section */
+.myprofile-hero {
+    padding: 60px 0 40px;
+    background: radial-gradient(ellipse at top, rgba(0, 102, 255, 0.1) 0%, transparent 60%),
+                radial-gradient(ellipse at bottom, rgba(138, 43, 226, 0.1) 0%, transparent 60%);
+}
+
+.myprofile-header {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.myprofile-avatar {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #0066ff, #8a2be2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.myprofile-avatar-initials {
+    color: white;
+}
+
+.myprofile-header-info {
+    flex: 1;
+}
+
+.myprofile-hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.myprofile-gradient-text {
+    background: linear-gradient(to right, #0066ff, #8a2be2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.myprofile-hero-subtitle {
+    font-size: 1.2rem;
+    color: #b0b7c3;
+    margin-bottom: 20px;
+}
+
+.myprofile-header-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.myprofile-code-snippet {
+    background-color: rgba(20, 25, 40, 0.8);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 8px;
+    padding: 25px;
+    text-align: left;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+}
+
+.myprofile-code-line {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.myprofile-line-number {
+    color: #8a2be2;
+    margin-right: 20px;
+    min-width: 30px;
+    user-select: none;
+}
+
+.myprofile-code-keyword {
+    color: #0066ff;
+}
+
+.myprofile-code-function {
+    color: #00aaff;
+}
+
+.myprofile-code-string {
+    color: #00cc88;
+}
+
+.myprofile-code-comment {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.myprofile-code-text {
+    color: #ffffff;
+}
+
+.myprofile-code-variable {
+    color: #ff9966;
+}
+
+/* Stats Section */
+.myprofile-stats-section {
+    padding: 60px 0;
+    background-color: rgba(20, 25, 40, 0.5);
+}
+
+.myprofile-section-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.myprofile-section-header h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    display: inline-block;
+    position: relative;
+}
+
+.myprofile-section-header h2::before {
+    content: "<";
+    color: #0066ff;
+    margin-right: 10px;
+}
+
+.myprofile-section-header h2::after {
+    content: ">";
+    color: #0066ff;
+    margin-left: 10px;
+}
+
+.myprofile-section-subtitle {
+    color: #b0b7c3;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.myprofile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.myprofile-stat-card {
+    background-color: rgba(20, 25, 40, 0.8);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 10px;
+    padding: 25px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.myprofile-stat-card:hover {
+    transform: translateY(-5px);
+    border-color: #0066ff;
+    box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2);
+}
+
+.myprofile-stat-icon {
+    font-size: 32px;
+    color: #00aaff;
+    margin-bottom: 15px;
+}
+
+.myprofile-stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #0066ff, #00aaff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+}
+
+.myprofile-stat-label {
+    color: #b0b7c3;
+    font-size: 1rem;
+}
+
+/* Profile Info Section */
+.myprofile-info-section {
+    padding: 60px 0;
+}
+
+.myprofile-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.myprofile-card {
+    background-color: rgba(20, 25, 40, 0.8);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.myprofile-card:hover {
+    border-color: #0066ff;
+    box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2);
+}
+
+.myprofile-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.myprofile-bio {
+    color: #b0b7c3;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.myprofile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.myprofile-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #b0b7c3;
+}
+
+.myprofile-meta-item i {
+    color: #0066ff;
+    width: 20px;
+}
+
+/* Skills */
+.myprofile-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.myprofile-skill-tag {
+    background-color: rgba(0, 102, 255, 0.1);
+    color: #00aaff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.myprofile-skill-tag:hover {
+    background-color: rgba(0, 102, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Course Progress */
+.myprofile-courses-list {
+    margin-bottom: 25px;
+}
+
+.myprofile-course-item {
+    margin-bottom: 20px;
+}
+
+.myprofile-course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.myprofile-course-title {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.myprofile-course-progress {
+    color: #00cc88;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.myprofile-progress-bar {
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.myprofile-progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, #0066ff, #00cc88);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Achievements */
+.myprofile-achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.myprofile-achievement {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background-color: rgba(20, 25, 40, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 102, 255, 0.2);
+}
+
+.myprofile-achievement-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #0066ff, #8a2be2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+}
+
+.myprofile-achievement-info h4 {
+    color: #ffffff;
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+
+.myprofile-achievement-info p {
+    color: #b0b7c3;
+    font-size: 0.9rem;
+}
+
+/* Social Links */
+.myprofile-social-section {
+    margin-top: 30px;
+}
+
+.myprofile-social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.myprofile-social-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background-color: rgba(0, 102, 255, 0.1);
+    color: #00aaff;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.myprofile-social-link:hover {
+    background-color: rgba(0, 102, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.myprofile-social-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background-color: rgba(20, 25, 40, 0.6);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+}
+
+.myprofile-social-input i {
+    color: #00aaff;
+    width: 20px;
+}
+
+.myprofile-social-input-field {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    flex: 1;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.95rem;
+}
+
+.myprofile-social-input-field::placeholder {
+    color: #6c757d;
+}
+
+.myprofile-no-social {
+    color: #b0b7c3;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Edit Mode Styles */
+.myprofile-edit-input {
+    background: transparent;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    color: #ffffff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1rem;
+    padding: 10px 15px;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.myprofile-edit-input.small {
+    width: auto;
+    min-width: 200px;
+}
+
+.myprofile-edit-textarea {
+    background: transparent;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    color: #ffffff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1rem;
+    padding: 15px;
+    border-radius: 4px;
+    width: 100%;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.myprofile-save-section {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.save-btn {
+    padding: 15px 40px;
+    font-size: 1.1rem;
+}
+
+/* Buttons */
+.myprofile-btn {
+    padding: 12px 25px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Exo 2', sans-serif;
+    border: none;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.myprofile-btn-primary {
+    background-color: #0066ff;
+    color: white;
+}
+
+.myprofile-btn-primary:hover {
+    background-color: #00aaff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 102, 255, 0.4);
+}
+
+.myprofile-btn-outline {
+    background: transparent;
+    border: 1px solid #0066ff;
+    color: #0066ff;
+}
+
+.myprofile-btn-outline:hover {
+    background-color: rgba(0, 102, 255, 0.1);
+}
+
+.full-width {
+    width: 100%;
+    justify-content: center;
+}
+
+/* CTA Section */
+.myprofile-cta-section {
+    padding: 80px 0;
+    text-align: center;
+    background: radial-gradient(circle at center, rgba(0, 102, 255, 0.1) 0%, transparent 70%);
+    border-top: 1px solid rgba(0, 102, 255, 0.2);
+}
+
+.myprofile-cta-section h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+}
+
+.myprofile-cta-text {
+    font-size: 1.1rem;
+    color: #b0b7c3;
+    max-width: 600px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+}
+
+.myprofile-cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .myprofile-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .myprofile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .myprofile-hero-title {
+        font-size: 2rem;
+    }
+    
+    .myprofile-section-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .myprofile-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .myprofile-achievements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .myprofile-cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .myprofile-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .myprofile-edit-input.small {
+        min-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .myprofile-hero-title {
+        font-size: 1.6rem;
+    }
+    
+    .myprofile-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .myprofile-header-actions {
+        flex-direction: column;
+    }
+    
+    .myprofile-avatar {
+        width: 100px;
+        height: 100px;
+        font-size: 28px;
+    }
+}

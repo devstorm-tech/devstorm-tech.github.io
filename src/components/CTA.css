@@ -1,0 +1,46 @@
+.cta-section {
+    padding: 100px 0;
+    text-align: center;
+    background: radial-gradient(circle at center, rgba(0, 102, 255, 0.1) 0%, transparent 70%);
+}
+
+.cta-section h2 {
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+}
+
+.cta-section p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+
+.cta-btn {
+    padding: 18px 50px;
+    font-size: 1.2rem;
+}
+
+.cta-note {
+    margin-top: 20px;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+@media (max-width: 768px) {
+    .cta-section {
+        padding: 70px 0;
+    }
+    
+    .cta-section h2 {
+        font-size: 2.2rem;
+    }
+    
+    .cta-section p {
+        font-size: 1.1rem;
+    }
+}
