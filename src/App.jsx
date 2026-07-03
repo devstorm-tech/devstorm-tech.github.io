@@ -4,17 +4,17 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
-import About from './Pages/About';
+import About from './pages/About';
 import Courses from './pages/Courses';
 import News from './pages/News';
 import CloudLinux from './pages/CloudLinux';
-import Login from './Pages/Login';
-import Signup from './Pages/Signup';
-import NotFound from './Pages/NotFound';
-import Compiler from './Pages/Compiler';
-import DvsStore from './Pages/Store';
-import MyProfile from './Pages/MyProfile';
-import SingleCourse from './Pages/SingleCourse';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import NotFound from './pages/NotFound';
+import Compiler from './pages/Compiler';
+import DvsStore from './pages/Store';
+import MyProfile from './pages/MyProfile';
+import SingleCourse from './pages/SingleCourse';
 
 function App() {
     useEffect(() => {

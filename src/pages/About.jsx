@@ -65,9 +65,9 @@ const About = () => {
         {
             id: 3,
             name: 'Habiba Hesham',
-            role: 'Front-end Web Developer',
-            bio: 'Passionate about creating intuitive frontend experiences with React ',
-            skills: ['React'],
+            role: 'Frontend Developer',
+            bio: 'Passionate frontend developer specializing in React.js. Dedicated to creating intuitive, responsive, and performant user interfaces that deliver exceptional user experiences.',
+            skills: ['React.js', 'JavaScript', 'HTML5', 'CSS3', 'Responsive Design', 'UI/UX'],
             image: '👩‍💻',
             color: 'about-avatar-green',
             social: {
@@ -91,13 +91,13 @@ const About = () => {
         {
             id: 5,
             name: 'Esraa Elshiekh',
-            role: 'Front-end Developer',
-            bio: 'Combines technical expertise in React and Laravel to build polished frontend experiences for the DevStorm community.',
-            skills: ['React', 'Laravel'],
+            role: 'Frontend Developer & Marketing Specialist',
+            bio: 'Skilled frontend developer with expertise in React.js and a passion for marketing. Combines technical proficiency with strategic marketing insights to build engaging digital experiences and drive brand growth.',
+            skills: ['React.js', 'JavaScript', 'HTML5', 'CSS3', 'Digital Marketing', 'Content Strategy', 'Social Media Management', 'SEO'],
             image: '👩‍💻',
             color: 'about-avatar-orange',
             social: {
-                linkedin: 'https://www.linkedin.com/in/habiba-hesham-ewais?utm_source=share_via&utm_content=profile&utm_medium=member_android'
+                linkedin: 'https://www.linkedin.com/company/devstorm2026/'
             }
         }
     ];

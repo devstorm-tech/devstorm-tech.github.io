@@ -2,9 +2,100 @@
   "courses": [
     {
       "id": 1,
-      "title": "React Basics",
+      "title": "Python Fundamentals",
+      "category": "Programming",
+      "price": 0,
+      "duration": "15 hours",
+      "description": "Master the fundamentals of Python programming from scratch. Learn variables, data types, loops, functions, and object-oriented programming.",
+      "level": "Beginner",
+      "instructor": "Ahmed Sameh",
+      "topics": [
+        "Python Syntax & Basics",
+        "Variables & Data Types",
+        "Control Flow & Loops",
+        "Functions & Modules",
+        "File Handling",
+        "Object-Oriented Programming",
+        "Error Handling",
+        "Working with Libraries"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "C++ Fundamentals",
+      "category": "Programming",
+      "price": 0,
+      "duration": "15 hours",
+      "description": "Learn the foundations of C++ programming. Understand memory management, pointers, data structures, and object-oriented concepts.",
+      "level": "Beginner to Intermediate",
+      "instructor": "Ahmed Sameh",
+      "topics": [
+        "C++ Syntax & Structure",
+        "Variables & Data Types",
+        "Control Structures",
+        "Functions & Overloading",
+        "Arrays & Strings",
+        "Pointers & References",
+        "Dynamic Memory Allocation",
+        "Object-Oriented Programming",
+        "Templates & STL",
+        "File I/O Operations"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Front-End Development with React",
       "category": "Web",
-      "price": 0
+      "price": 0,
+      "duration": "36 hours",
+      "description": "Become a professional front-end developer by mastering React.js. Build modern, responsive, and interactive web applications with the most popular JavaScript library.",
+      "level": "Intermediate",
+      "instructor": "Habiba Hesham",
+      "topics": [
+        "HTML5 & CSS3 Advanced",
+        "JavaScript ES6+",
+        "React Fundamentals",
+        "JSX & Components",
+        "Props & State Management",
+        "React Hooks",
+        "Event Handling",
+        "Forms & Validation",
+        "React Router",
+        "State Management with Context API",
+        "API Integration (REST, GraphQL)",
+        "React Performance Optimization",
+        "Styling in React (CSS Modules, Styled Components)",
+        "Testing React Applications",
+        "Deployment & Hosting"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Back-End Development with Laravel",
+      "category": "Web",
+      "price": 0,
+      "duration": "36 hours",
+      "description": "Master back-end development with Laravel, the most popular PHP framework. Build robust, secure, and scalable RESTful APIs and web applications.",
+      "level": "Intermediate",
+      "instructor": "Ahmed Shady",
+      "topics": [
+        "PHP Fundamentals",
+        "Laravel Architecture",
+        "MVC Pattern",
+        "Routing & Controllers",
+        "Blade Templating Engine",
+        "Eloquent ORM",
+        "Database Migrations & Seeders",
+        "Authentication & Authorization",
+        "Middleware & Filters",
+        "RESTful API Development",
+        "File Storage & Uploads",
+        "Queue & Jobs",
+        "Caching & Performance Optimization",
+        "Testing with PHPUnit",
+        "Laravel Security Best Practices",
+        "Deployment & Server Management"
+      ]
     }
   ]
 }
