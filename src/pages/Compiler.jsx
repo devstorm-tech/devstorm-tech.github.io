@@ -12,8 +12,14 @@ const Compiler = () => {
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState(14);
-  const [theme, setTheme] = useState('dark');
-  
+  const [theme, setTheme] = useState('dark'); // 'dark', 'light', 'high-contrast'
+
+  // Resize states
+  const [sidebarWidth, setSidebarWidth] = useState(240);
+  const [terminalHeight, setTerminalHeight] = useState(200);
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+  const [isResizingTerminal, setIsResizingTerminal] = useState(false);
+
   // Wandbox specific state
   const [availableCompilers, setAvailableCompilers] = useState([]);
   const [selectedCompiler, setSelectedCompiler] = useState('');
@@ -24,8 +30,13 @@ const Compiler = () => {
 
   // Refs
   const terminalRef = useRef(null);
+  const mainContainerRef = useRef(null);
+  const editorAreaRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const panelRef = useRef(null);
+  const containerRef = useRef(null); // overall container
 
-  // File extension to compiler mapping
+  // --- Compiler detection logic (unchanged) ---
   const getCompilerForExtension = (extension, availableCompilersList) => {
     if (!availableCompilersList || availableCompilersList.length === 0) return null;
 
@@ -89,9 +100,7 @@ const Compiler = () => {
 
     let compiler = null;
 
-    // Special handling for Python - try multiple variations
     if (extension === 'py') {
-      // Try to find any Python compiler
       const pythonCompilers = availableCompilersList.filter(c => 
         c.language.toLowerCase().includes('python') ||
         c.name.toLowerCase().includes('cpython') ||
@@ -99,18 +108,16 @@ const Compiler = () => {
       );
       
       if (pythonCompilers.length > 0) {
-        // Prefer cpython-head or cpython-3.x
         compiler = pythonCompilers.find(c => 
           c.name.includes('cpython-head') || 
           c.name.includes('cpython-3') ||
           c.name.includes('python3')
         );
         if (!compiler) {
-          compiler = pythonCompilers[0]; // Use first available Python compiler
+          compiler = pythonCompilers[0];
         }
       }
       
-      // If still no compiler, try the search list
       if (!compiler) {
         for (const searchTerm of extInfo.search) {
           compiler = availableCompilersList.find(c => 
@@ -166,7 +173,7 @@ const Compiler = () => {
     return compiler;
   };
 
-  // Default files
+  // --- Default files and initialisation (unchanged) ---
   const defaultFiles = [
     {
       id: 'welcome',
@@ -437,7 +444,7 @@ rl.question('Enter your name: ', (name) => {
       'java': `// ${filename}\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Java!");\n    }\n}\n`,
       'php': `<?php\n// ${filename}\necho "Hello from PHP!\\n";\n?>\n`,
       'go': `// ${filename}\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Go!")\n}\n`,
-      'rust': `// ${filename}\nfn main() {\n    println!("Hello from Rust!");\n}\n`,
+      'rust': `// ${filename}\nfn main() {\n    println!("Hello from Rust!")\n}\n`,
       'ruby': `# ${filename}\nputs "Hello from Ruby!"\n`,
       'csharp': `// ${filename}\nusing System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello from C#!");\n    }\n}\n`
     };
@@ -507,16 +514,13 @@ rl.question('Enter your name: ', (name) => {
     try {
       let compilerToUse = selectedCompiler;
       
-      // Special handling for Python - try different compilers if one fails
       if (file.type === 'py') {
-        // Try to find a working Python compiler
         const pythonCompilers = availableCompilers.filter(c => 
           c.language.toLowerCase().includes('python') ||
           c.name.toLowerCase().includes('cpython') ||
           c.name.toLowerCase().includes('python')
         );
         
-        // Prefer specific versions that are known to work
         const preferredCompilers = ['cpython-head', 'cpython-3.12', 'cpython-3.11', 'cpython-3.10'];
         let foundCompiler = pythonCompilers.find(c => 
           preferredCompilers.some(pref => c.name.includes(pref))
@@ -529,7 +533,6 @@ rl.question('Enter your name: ', (name) => {
         }
       }
 
-      // Special handling for JavaScript/Node.js
       if (file.type === 'js') {
         const nodeCompilers = availableCompilers.filter(c => 
           c.name.includes('nodejs') || 
@@ -537,7 +540,6 @@ rl.question('Enter your name: ', (name) => {
           c.language.toLowerCase().includes('node')
         );
         if (nodeCompilers.length > 0) {
-          // Prefer nodejs-head or latest
           const preferredNode = nodeCompilers.find(c => 
             c.name.includes('nodejs-head') || 
             c.name.includes('nodejs-')
@@ -571,13 +573,10 @@ rl.question('Enter your name: ', (name) => {
       outputText += `📝 Language: ${file.language || file.type}\n`;
       outputText += `${'='.repeat(50)}\n\n`;
 
-      // Check if there's a compiler error
       if (result.compiler_error) {
         outputText += `❌ Compilation Error:\n${result.compiler_error}\n`;
       } 
-      // Check if there's a program error (runtime error)
       else if (result.program_error) {
-        // Check if it's the specific Wandbox error
         if (result.program_error.includes('failed to exec pid1')) {
           outputText += `⚠️ Wandbox Execution Error:\n`;
           outputText += `The Wandbox service might be experiencing issues.\n\n`;
@@ -588,7 +587,6 @@ rl.question('Enter your name: ', (name) => {
           outputText += `4. Try running a simpler version of your code\n\n`;
           outputText += `🔄 Retrying with a different compiler...\n`;
           
-          // Attempt to retry with a different Python compiler
           if (file.type === 'py') {
             const pythonCompilers = availableCompilers.filter(c => 
               c.language.toLowerCase().includes('python') &&
@@ -631,14 +629,12 @@ rl.question('Enter your name: ', (name) => {
           outputText += `❌ Runtime Error:\n${result.program_error}\n`;
         }
       } 
-      // Check for signal
       else if (result.signal) {
         outputText += `⚠️ Program terminated with signal: ${result.signal}\n`;
         if (result.program_output) {
           outputText += `\n📤 Output:\n${result.program_output}\n`;
         }
       }
-      // Success - show output
       else {
         if (result.program_output !== undefined && result.program_output !== null) {
           if (result.program_output.trim()) {
@@ -651,7 +647,6 @@ rl.question('Enter your name: ', (name) => {
         }
       }
 
-      // Add execution info
       outputText += `\n${'='.repeat(50)}\n`;
       outputText += `⏱️ Execution completed at ${new Date().toLocaleTimeString()}\n`;
       
@@ -747,8 +742,61 @@ rl.question('Enter your name: ', (name) => {
 
   const currentFile = getCurrentFile();
 
+  // --- RESIZE HANDLERS (FIXED) ---
+  const startResizeSidebar = (e) => {
+    e.preventDefault();
+    setIsResizingSidebar(true);
+    document.addEventListener('mousemove', onResizeSidebar);
+    document.addEventListener('mouseup', stopResizeSidebar);
+  };
+
+  const onResizeSidebar = (e) => {
+    if (!isResizingSidebar) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newWidth = e.clientX - containerRect.left;
+    const clamped = Math.min(400, Math.max(150, newWidth));
+    setSidebarWidth(clamped);
+  };
+
+  const stopResizeSidebar = () => {
+    setIsResizingSidebar(false);
+    document.removeEventListener('mousemove', onResizeSidebar);
+    document.removeEventListener('mouseup', stopResizeSidebar);
+  };
+
+  const startResizeTerminal = (e) => {
+    e.preventDefault();
+    setIsResizingTerminal(true);
+    document.addEventListener('mousemove', onResizeTerminal);
+    document.addEventListener('mouseup', stopResizeTerminal);
+  };
+
+  const onResizeTerminal = (e) => {
+    if (!isResizingTerminal) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newHeight = containerRect.bottom - e.clientY;
+    const minHeight = 80;
+    const maxHeight = containerRect.height * 0.7;
+    const clamped = Math.min(maxHeight, Math.max(minHeight, newHeight));
+    setTerminalHeight(clamped);
+  };
+
+  const stopResizeTerminal = () => {
+    setIsResizingTerminal(false);
+    document.removeEventListener('mousemove', onResizeTerminal);
+    document.removeEventListener('mouseup', stopResizeTerminal);
+  };
+
+  // Theme cycling
+  const cycleTheme = () => {
+    const themes = ['dark', 'light', 'high-contrast'];
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
+
   return (
-    <div className={`compiler-vscode ${theme}`}>
+    <div className={`compiler-vscode ${theme}`} ref={containerRef}>
       <div className="vscode-container">
         {/* Title Bar */}
         <div className="vscode-titlebar">
@@ -762,8 +810,9 @@ rl.question('Enter your name: ', (name) => {
             </span>
           </div>
           <div className="titlebar-right">
-            <button className="titlebar-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              <i className={`fas fa-${theme === 'dark' ? 'sun' : 'moon'}`}></i>
+            <button className="titlebar-btn" onClick={cycleTheme} title="Toggle theme (Dark/Light/High Contrast)">
+              <i className={`fas fa-${theme === 'dark' ? 'moon' : theme === 'light' ? 'sun' : 'eye'}`}></i>
+              <span className="badge">{theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'HC'}</span>
             </button>
             <button className="titlebar-btn" onClick={() => setExplorerVisible(!explorerVisible)}>
               <i className="fas fa-sidebar"></i>
@@ -775,10 +824,14 @@ rl.question('Enter your name: ', (name) => {
         </div>
 
         {/* Main Layout */}
-        <div className="vscode-main">
+        <div className="vscode-main" ref={mainContainerRef}>
           {/* Sidebar */}
           {explorerVisible && (
-            <div className="vscode-sidebar">
+            <div 
+              className="vscode-sidebar" 
+              ref={sidebarRef}
+              style={{ width: sidebarWidth }}
+            >
               <div className="sidebar-header">
                 <span>EXPLORER</span>
                 <button className="sidebar-btn" onClick={createNewFile}>
@@ -822,8 +875,17 @@ rl.question('Enter your name: ', (name) => {
             </div>
           )}
 
+          {/* Sidebar resize handle */}
+          {explorerVisible && (
+            <div 
+              className={`sidebar-resize-handle ${isResizingSidebar ? 'active' : ''}`}
+              onMouseDown={startResizeSidebar}
+              title="Drag to resize sidebar"
+            />
+          )}
+
           {/* Editor Area */}
-          <div className="vscode-editor-area">
+          <div className="vscode-editor-area" ref={editorAreaRef}>
             {/* Editor Tabs */}
             <div className="editor-tabs">
               {files.map(file => (
@@ -833,7 +895,7 @@ rl.question('Enter your name: ', (name) => {
                   onClick={() => setActiveFile(file.id)}
                 >
                   <i className={getFileIcon(file.name)} style={{ color: getFileColor(file.name) }}></i>
-                  <span>{file.name}</span>
+                  <span className="tab-label">{file.name}</span>
                   <button
                     className="tab-close"
                     onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }}
@@ -890,7 +952,7 @@ rl.question('Enter your name: ', (name) => {
                         />
                       </label>
                     </div>
-                    <div className="control-group">
+                    <div className="control-group-actions">
                       <button
                         className="run-btn"
                         onClick={executeCode}
@@ -905,6 +967,13 @@ rl.question('Enter your name: ', (name) => {
                         title="Export Project as ZIP"
                       >
                         <i className="fas fa-download"></i>
+                      </button>
+                      <button
+                        className="theme-btn"
+                        onClick={cycleTheme}
+                        title="Toggle High Contrast"
+                      >
+                        <i className="fas fa-eye"></i>
                       </button>
                     </div>
                   </div>
@@ -928,9 +997,22 @@ rl.question('Enter your name: ', (name) => {
           </div>
         </div>
 
-        {/* Panel */}
+        {/* Terminal Resize Handle */}
         {terminalVisible && (
-          <div className="vscode-panel">
+          <div 
+            className={`terminal-resize-handle ${isResizingTerminal ? 'active' : ''}`}
+            onMouseDown={startResizeTerminal}
+            title="Drag to resize terminal"
+          />
+        )}
+
+        {/* Panel (Terminal) */}
+        {terminalVisible && (
+          <div 
+            className="vscode-panel" 
+            ref={panelRef}
+            style={{ height: terminalHeight }}
+          >
             <div className="panel-tabs">
               <button className="panel-tab active">
                 <i className="fas fa-terminal"></i> TERMINAL
