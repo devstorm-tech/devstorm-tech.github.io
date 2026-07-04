@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import './Courses.css';
 
 const coursesData = [
@@ -68,9 +69,15 @@ const Courses = () => {
     return (
         <section className="courses-section" id="courses">
             <div className="container">
-                <div className="section-title">
-                    <h2>Popular Courses</h2>
-                    <p className="section-subtitle">Start your journey with our most popular courses</p>
+                {/* Header with title and Manage Courses button */}
+                <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="section-title">
+                        <h2>Popular Courses</h2>
+                        <p className="section-subtitle">Start your journey with our most popular courses</p>
+                    </div>
+                    <Link to="/dashboard" className="btn btn-primary">
+                        Manage Courses
+                    </Link>
                 </div>
                 
                 <div className="courses-grid">
