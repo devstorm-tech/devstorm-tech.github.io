@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-export default function App() {
+export default function Dashboard() {
   const [courses, setCourses] = useState([]);
   const [status, setStatus] = useState('Loading course data...');
   const [isSaving, setIsSaving] = useState(false);
 
-  const OWNER = 'ahmedsamehgads'; // Your GitHub Username
+  const OWNER = 'ahmedsamehgads'; 
   const REPO = 'devstorm-tech';
   const FILE_PATH = 'courses.json';
   const FETCH_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${FILE_PATH}`;
@@ -45,8 +45,7 @@ export default function App() {
 
   // Send state array to your Vercel serverless function endpoint
   const handleSaveToGithub = async () => {
-    // Basic filter to strip out completely unwritten course item rows
-    const cleanPayload = courses.filter(c => c.title.trim() !== '');
+    const cleanPayload = courses.filter(c => c.title && c.title.trim() !== '');
 
     if (cleanPayload.length === 0) {
       alert('Please add at least one complete course title before saving.');
@@ -116,7 +115,7 @@ export default function App() {
                   <input 
                     type="text" 
                     style={styles.input} 
-                    value={course.title} 
+                    value={course.title || ''} 
                     placeholder="e.g., Python Advanced"
                     onChange={(e) => handleInputChange(index, 'title', e.target.value)}
                   />
@@ -125,7 +124,7 @@ export default function App() {
                   <input 
                     type="text" 
                     style={styles.input} 
-                    value={course.duration} 
+                    value={course.duration || ''} 
                     placeholder="e.g., 6 weeks"
                     onChange={(e) => handleInputChange(index, 'duration', e.target.value)}
                   />
@@ -134,7 +133,7 @@ export default function App() {
                   <input 
                     type="number" 
                     style={styles.input} 
-                    value={course.lessons} 
+                    value={course.lessons || 0} 
                     placeholder="0"
                     onChange={(e) => handleInputChange(index, 'lessons', e.target.value)}
                   />
@@ -154,7 +153,8 @@ export default function App() {
           </button>
         </div>
 
-        <div style={styles.styles?.status || styles.status}>{status}</div>
+        {/* Cleaned up the style object typo here */}
+        <div style={styles.status}>{status}</div>
       </div>
     </div>
   );

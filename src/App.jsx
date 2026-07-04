@@ -15,6 +15,8 @@ import Compiler from './pages/Compiler';
 import DvsStore from './pages/Store';
 import MyProfile from './pages/MyProfile';
 import SingleCourse from './pages/SingleCourse';
+import Dashboard from './pages/dashboard';
+
 
 function App() {
     useEffect(() => {
@@ -46,7 +48,8 @@ function App() {
                     <Route path="/cloud-linux" element={<CloudLinux />} />
                     <Route path="/compiler" element={<Compiler />} />
                     <Route path="/profile" element={<MyProfile />} />
-                    
+                    <Route path="/dashboard" element={<Dashboard />} />
+
                     {/* Redirect old /course route to courses page */}
                     <Route path="/course" element={<Navigate to="/courses" />} />
                     
