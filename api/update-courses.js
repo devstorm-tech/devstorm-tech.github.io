@@ -6,10 +6,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
+  // Loaded securely in Vercel Cloud environment variables
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
   const OWNER = 'ahmedsamehgads'; 
   const REPO = 'devstorm-tech';
-  const FILE_PATH = 'courses.json';
+  
+  // FIXED: Updated path to point directly inside the public folder
+  const FILE_PATH = 'public/courses.json';
 
   const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
   const newCourseData = req.body.courses;
@@ -18,20 +21,20 @@ export default async function handler(req, res) {
     // Step A: Fetch current file's metadata to get the latest SHA string
     const getResponse = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${GITHUB_TOKEN}`, // Swapped to standard Bearer token format
+        'Authorization': `Bearer ${GITHUB_TOKEN}`, // Standard Bearer token authentication format
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Vercel-Serverless-Function' // GitHub API strictly requires a User-Agent header
+        'User-Agent': 'Vercel-Serverless-Function' // Required header for GitHub API verification
       }
     });
     
     let fileSha = null;
 
-    // If the file exists, grab its SHA hash
+    // If the file exists, grab its unique SHA hash
     if (getResponse.ok) {
       const fileData = await getResponse.json();
       fileSha = fileData.sha;
     } else if (getResponse.status !== 404) {
-      // If it's a failure other than a 404 (Not Found), throw an explicit error
+      // If it's a failure other than a 404 (Not Found), throw an explicit network error
       throw new Error(`GitHub metadata fetch failed with status ${getResponse.status}`);
     }
 
@@ -45,7 +48,7 @@ export default async function handler(req, res) {
       content: contentBase64
     };
 
-    // If the file already exists, we MUST provide the SHA to overwrite it
+    // If the file already exists, we MUST provide the SHA to safely overwrite it
     if (fileSha) {
       putBody.sha = fileSha;
     }
