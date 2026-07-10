@@ -17,9 +17,20 @@
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "csurf": "^1.11.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "file-saver": "^2.0.5",
+    "helmet": "^8.2.0",
     "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.3",
     "jszip": "^3.10.1",
+    "mongoose": "^9.7.4",
+    "nodemailer": "^9.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
@@ -35,6 +46,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "gh-pages": "^6.3.0",
     "globals": "^16.5.0",
+    "nodemon": "^3.1.14",
     "vite": "^7.2.4"
   }
 }
