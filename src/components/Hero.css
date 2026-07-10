@@ -81,11 +81,15 @@
 }
 
 .video-link {
-    margin-top: 20px;
+    margin: 20px;
     color: var(--accent-light-blue);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    background-color: rgba(255, 255, 255, 0.049);
+    padding: 15px;
+
+    border-radius: 10px;
     gap: 8px;
     transition: color 0.3s;
 }

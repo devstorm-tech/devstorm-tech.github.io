@@ -347,10 +347,6 @@ const Login = () => {
                 <div className="auth-wrapper">
                     {/* Left side - Brand/Info */}
                     <div className="auth-side">
-                        <div className="auth-brand">
-                            <div className="logo-icon">DevStorm</div>
-                            <div className="logo-text">DevStorm</div>
-                        </div>
                         <h1 className="auth-side-title">Welcome Back</h1>
                         <p className="auth-side-text">
                             Continue your programming journey with access to all courses, 

@@ -465,6 +465,7 @@
     margin-bottom: 6px;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .line-number {

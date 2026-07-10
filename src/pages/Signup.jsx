@@ -306,8 +306,6 @@ const Signup = () => {
                     {/* Left side - Brand/Info */}
                     <div className="auth-side">
                         <div className="auth-brand">
-                            <div className="logo-icon">DevStorm</div>
-                            <div className="logo-text">DevStorm</div>
                         </div>
                         <h1 className="auth-side-title">Join DevStorm</h1>
                         <p className="auth-side-text">
@@ -538,7 +536,7 @@ const Signup = () => {
 
                             {/* Code Snippet for design consistency */}
                             <div className="auth-code-snippet">
-                                <div className="code-line">
+                                <div className="code-line"> 
                                     <span className="line-number">1</span>
                                     <span className="code-comment">// Join the DevStorm community</span>
                                 </div>
