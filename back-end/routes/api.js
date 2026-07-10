@@ -1,5 +1,6 @@
 const express = require('express');
 const AuthController = require('../controllers/AuthController');
+const CourseController = require('../controllers/CourseController');
 const auth = require('../middleware/auth');
 const { setCsrfCookie } = require('../middleware/csrf');
 const {
@@ -7,6 +8,7 @@ const {
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
+  courseValidation,
   validate,
 } = require('../middleware/validation');
 
@@ -50,5 +52,13 @@ router.post(
   validate,
   AuthController.resetPassword
 );
+
+// Course routes
+router.get('/api/courses', CourseController.listCourses);
+router.get('/api/courses/:id', CourseController.getCourse);
+router.get('/api/courses/slug/:slug', CourseController.getCourse);
+router.post('/api/courses', auth, courseValidation, validate, CourseController.createCourse);
+router.put('/api/courses/:id', auth, courseValidation, validate, CourseController.updateCourse);
+router.delete('/api/courses/:id', auth, CourseController.deleteCourse);
 
 module.exports = router;

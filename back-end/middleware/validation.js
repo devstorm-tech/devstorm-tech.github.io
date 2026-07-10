@@ -38,6 +38,16 @@ const resetPasswordValidation = [
     .withMessage('Passwords do not match'),
 ];
 
+const courseValidation = [
+  body('title').trim().isLength({ min: 2 }).withMessage('Title must be at least 2 characters'),
+  body('category').trim().notEmpty().withMessage('Category is required'),
+  body('description').trim().isLength({ min: 10 }).withMessage('Description must be at least 10 characters'),
+  body('price').optional().isNumeric().withMessage('Price must be numeric'),
+  body('lessons').optional().isInt({ min: 0 }).withMessage('Lessons must be a non-negative number'),
+  body('students').optional().isInt({ min: 0 }).withMessage('Students must be a non-negative number'),
+  body('rating').optional().isFloat({ min: 0, max: 5 }).withMessage('Rating must be between 0 and 5'),
+];
+
 // Validation result handler
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -59,5 +69,6 @@ module.exports = {
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
+  courseValidation,
   validate,
 };

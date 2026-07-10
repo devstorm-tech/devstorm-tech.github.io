@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Courses.css';
 
+const COURSES_API_URL = import.meta.env.VITE_COURSES_API_URL || 'https://api.devstorm.dev/api/courses';
+
 // Utility Functions
 const formatPrice = (price) => {
   if (price === null || price === undefined) return '$0.00';
@@ -33,6 +35,16 @@ const getCourseLevel = (course) => {
   };
   return levels[level] || levels.beginner;
 };
+
+const normalizeCourse = (course, index = 0) => ({
+  ...course,
+  id: course.id || course._id || `${course.slug || course.title || 'course'}-${index}`,
+  price: course.price ?? 0,
+  lessons: course.lessons ?? 0,
+  students: course.students ?? 0,
+  rating: course.rating ?? 4.5,
+  featured: Boolean(course.featured),
+});
 
 // Components
 const LoadingSpinner = () => (
@@ -194,24 +206,24 @@ const Courses = () => {
     { id: 'advanced', name: 'Advanced', color: 'courses-level-advanced' }
   ];
   
-  // Load data from local JSON file
   const loadData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      
-      const response = await fetch('/courses.json');
+
+      const response = await fetch(COURSES_API_URL);
       if (!response.ok) {
-        throw new Error(`Failed to load courses: ${response.status}`);
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Failed to load courses: ${response.status}`);
       }
-      
+
       const jsonData = await response.json();
-      const courses = jsonData.courses || [];
-      
+      const payload = Array.isArray(jsonData) ? jsonData : (Array.isArray(jsonData?.data) ? jsonData.data : (Array.isArray(jsonData?.courses) ? jsonData.courses : []));
+      const courses = payload.map((course, index) => normalizeCourse(course, index));
+
       if (!Array.isArray(courses) || courses.length === 0) {
-        throw new Error('No courses found in the data file');
+        throw new Error('No courses found from the API');
       }
-      
-      // Extract unique categories
+
       const uniqueCategories = {};
       courses.forEach(course => {
         const categoryName = course.category;
@@ -222,11 +234,11 @@ const Courses = () => {
           uniqueCategories[categoryName]++;
         }
       });
-      
+
       const allCategories = [
         { id: 'all', name: 'All', count: courses.length }
       ];
-      
+
       Object.entries(uniqueCategories).forEach(([name, count]) => {
         allCategories.push({
           id: name.toLowerCase().replace(/\s+/g, '-'),
@@ -234,23 +246,23 @@ const Courses = () => {
           count
         });
       });
-      
+
       setState({
         allCourses: courses,
         categories: allCategories,
         loading: false,
         error: null
       });
-      
+
       const featured = courses.filter(course => course.featured === true).slice(0, 3);
       setFeaturedCourses(featured);
-      
+
     } catch (error) {
       console.error('Error loading data:', error);
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: error.message 
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message
       }));
     }
   }, []);
