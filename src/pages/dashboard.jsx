@@ -1,160 +1,361 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import apiClient from '../api/client';
+import { createCourse, deleteCourse as deleteCourseRequest, listCourses } from '../api/adminCourses';
+import './dashboard.css';
+
+const emptyCourseForm = {
+  title: '',
+  category: 'Programming',
+  description: '',
+  price: 0,
+  discount_price: '',
+  duration: '',
+  level: 'Beginner',
+  instructor: '',
+  lessons: 0,
+  students: 0,
+  rating: 4.5,
+  featured: false,
+  topics: '',
+};
+
+const emptyUserForm = {
+  name: '',
+  email: '',
+  password: '',
+  role: 'student',
+};
 
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState('courses');
   const [courses, setCourses] = useState([]);
-  const [status, setStatus] = useState('Loading course data...');
+  const [users, setUsers] = useState([]);
+  const [courseForm, setCourseForm] = useState(emptyCourseForm);
+  const [userForm, setUserForm] = useState(emptyUserForm);
+  const [status, setStatus] = useState('Loading admin data...');
   const [isSaving, setIsSaving] = useState(false);
 
-  const OWNER = 'ahmedsamehgads'; 
-  const REPO = 'devstorm-tech';
-  const FILE_PATH = 'courses.json';
-  const FETCH_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${FILE_PATH}`;
+  const authToken = useMemo(() => localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '', []);
 
-  // Fetch initial data from GitHub raw address instantly on mount
-  useEffect(() => {
-    async function loadInitialData() {
-      try {
-        const response = await fetch(FETCH_URL);
-        if (!response.ok) throw new Error('Could not read existing file structure.');
-        const data = await response.json();
-        setCourses(Array.isArray(data) ? data : []);
-        setStatus('Data loaded successfully.');
-      } catch (err) {
-        setStatus(`Notice: ${err.message}. Ready to create new fields layout.`);
-      }
+  const apiFetch = async (path, options = {}) => {
+    const response = await apiClient.request({
+      url: path,
+      ...options,
+    });
+    return response.data;
+  };
+
+  const sanitizeCoursePayload = (formValues) => {
+    const topicList = String(formValues.topics || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    return {
+      title: String(formValues.title || '').trim(),
+      category: String(formValues.category || '').trim(),
+      description: String(formValues.description || '').trim(),
+      price: parseFloat(formValues.price ?? 0),
+      discount_price: formValues.discount_price === '' || formValues.discount_price === null || formValues.discount_price === undefined
+        ? null
+        : parseFloat(formValues.discount_price),
+      duration: String(formValues.duration || '').trim(),
+      level: String(formValues.level || '').trim().toLowerCase(),
+      instructor: String(formValues.instructor || '').trim(),
+      lessons: parseInt(formValues.lessons ?? 0, 10),
+      students: parseInt(formValues.students ?? 0, 10),
+      rating: parseFloat(formValues.rating ?? 4.5),
+      featured: !!formValues.featured,
+      topics: topicList,
+    };
+  };
+
+  const validateCoursePayload = (payload) => {
+    const errors = [];
+
+    if (!payload.title || payload.title.length < 5) {
+      errors.push('title: Title must be at least 5 characters');
     }
-    loadInitialData();
+
+    if (!payload.description || payload.description.length < 20) {
+      errors.push('description: Description must be at least 20 characters');
+    }
+
+    if (!['beginner', 'intermediate', 'advanced'].includes(payload.level)) {
+      errors.push('level: Level must be one of beginner, intermediate, or advanced');
+    }
+
+    if (Number.isNaN(payload.price) || payload.price < 0) {
+      errors.push('price: Price must be a non-negative number');
+    }
+
+    if (payload.discount_price !== null && (Number.isNaN(payload.discount_price) || payload.discount_price < 0)) {
+      errors.push('discount_price: Discount price must be a non-negative number');
+    }
+
+    return errors;
+  };
+
+  const loadCourses = async () => {
+    try {
+      const data = await listCourses();
+      setCourses(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
+      setStatus('Courses loaded successfully.');
+    } catch (error) {
+      setStatus(`Could not load courses: ${error.message}`);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const data = await apiFetch('/users');
+      setUsers(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
+    } catch (error) {
+      setStatus(`Could not load users: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    loadCourses();
+    loadUsers();
   }, []);
 
-  // Update a single field inside our state array
-  const handleInputChange = (index, field, value) => {
-    const updated = [...courses];
-    updated[index][field] = field === 'lessons' ? (parseInt(value, 10) || 0) : value;
-    setCourses(updated);
+  const handleCourseInputChange = (field, value) => {
+    setCourseForm(prev => ({ ...prev, [field]: value }));
   };
 
-  // Add a fresh, blank row layout template
-  const addNewRow = () => {
-    setCourses([...courses, { title: '', duration: '', lessons: 0 }]);
+  const handleUserInputChange = (field, value) => {
+    setUserForm(prev => ({ ...prev, [field]: value }));
   };
 
-  // Remove targeted row index
-  const deleteRow = (index) => {
-    setCourses(courses.filter((_, i) => i !== index));
-  };
+  const handleCourseSubmit = async (event) => {
+    event.preventDefault();
+    setIsSaving(true);
+    setStatus('Creating course...');
 
-  // Send state array to your Vercel serverless function endpoint
-  const handleSaveToGithub = async () => {
-    const cleanPayload = courses.filter(c => c.title && c.title.trim() !== '');
+    const sanitizedPayload = sanitizeCoursePayload(courseForm);
+    const validationErrors = validateCoursePayload(sanitizedPayload);
 
-    if (cleanPayload.length === 0) {
-      alert('Please add at least one complete course title before saving.');
+    if (validationErrors.length > 0) {
+      setIsSaving(false);
+      setStatus(validationErrors.join(' • '));
       return;
     }
 
-    setIsSaving(true);
-    setStatus('Deploying commit modifications via Serverless Endpoint...');
-
     try {
-      const response = await fetch('/api/update-courses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courses: cleanPayload })
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setStatus('Changes successfully committed to GitHub!');
-        alert('Success! GitHub repository courses.json updated.');
-      } else {
-        throw new Error(result.error || 'Serverless endpoint configuration error.');
-      }
-    } catch (err) {
-      setStatus(`Execution error: ${err.message}`);
+      const result = await createCourse(sanitizedPayload);
+      setCourses(prev => [result.data || result, ...prev]);
+      setCourseForm(emptyCourseForm);
+      setStatus('Course created successfully.');
+    } catch (error) {
+      setStatus(`Course create failed: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Inline styling object container mapping dashboard design schema
-  const styles = {
-    body: { fontFamily: 'Segoe UI, sans-serif', backgroundColor: '#0f172a', color: '#e2e8f0', minHeight: '100vh', padding: '40px 20px' },
-    container: { maxWidth: '1000px', margin: '0 auto' },
-    header: { color: '#38bdf8', borderBottom: '2px solid #1e293b', paddingBottom: '10px' },
-    table: { width: '100%', borderCollapse: 'collapse', marginTop: '20px', backgroundColor: '#1e293b', borderRadius: '8px', overflow: 'hidden' },
-    th: { padding: '12px 15px', textAlign: 'left', backgroundColor: '#0f172a', color: '#38bdf8', borderBottom: '2px solid #334155' },
-    td: { padding: '12px 15px', borderBottom: '1px solid #334155' },
-    input: { width: '90%', padding: '8px', backgroundColor: '#0f172a', border: '1px solid #475569', color: '#fff', borderRadius: '4px' },
-    actions: { marginTop: '20px', display: 'flex', gap: '10px' },
-    btnSave: { padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: '#10b981', color: 'white' },
-    btnAdd: { padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: '#38bdf8', color: '#0f172a' },
-    btnDelete: { padding: '6px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#ef4444', color: 'white' },
-    status: { marginTop: '15px', fontStyle: 'italic', color: '#94a3b8' }
+  const handleUserSubmit = async (event) => {
+    event.preventDefault();
+    setIsSaving(true);
+    setStatus('Creating user...');
+
+    try {
+      const result = await apiFetch('/users', { method: 'POST', body: JSON.stringify(userForm) });
+      setUsers(prev => [result.data || result, ...prev]);
+      setUserForm(emptyUserForm);
+      setStatus('User created successfully.');
+    } catch (error) {
+      setStatus(`User create failed: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const deleteCourse = async (id) => {
+    try {
+      await deleteCourseRequest(id);
+      setCourses(prev => prev.filter(course => course._id !== id && course.id !== id));
+      setStatus('Course deleted.');
+    } catch (error) {
+      setStatus(`Course delete failed: ${error.message}`);
+    }
   };
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
-        <h1 style={styles.header}>devStorm Core Dashboard</h1>
-        <p>Edit course schedules securely. Changes deploy directly to your repository asset tree via serverless operations.</p>
-
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Course Title</th>
-              <th style={styles.th}>Duration</th>
-              <th style={styles.th}>Lessons Count</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {courses.map((course, index) => (
-              <tr key={index}>
-                <td style={styles.td}>
-                  <input 
-                    type="text" 
-                    style={styles.input} 
-                    value={course.title || ''} 
-                    placeholder="e.g., Python Advanced"
-                    onChange={(e) => handleInputChange(index, 'title', e.target.value)}
-                  />
-                </td>
-                <td style={styles.td}>
-                  <input 
-                    type="text" 
-                    style={styles.input} 
-                    value={course.duration || ''} 
-                    placeholder="e.g., 6 weeks"
-                    onChange={(e) => handleInputChange(index, 'duration', e.target.value)}
-                  />
-                </td>
-                <td style={styles.td}>
-                  <input 
-                    type="number" 
-                    style={styles.input} 
-                    value={course.lessons || 0} 
-                    placeholder="0"
-                    onChange={(e) => handleInputChange(index, 'lessons', e.target.value)}
-                  />
-                </td>
-                <td style={styles.td}>
-                  <button style={styles.btnDelete} onClick={() => deleteRow(index)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div style={styles.actions}>
-          <button style={styles.btnAdd} onClick={addNewRow}>+ Add New Course</button>
-          <button style={styles.btnSave} onClick={handleSaveToGithub} disabled={isSaving}>
-            {isSaving ? 'Saving Changes...' : 'Save Changes to GitHub'}
-          </button>
+    <div className="dashboard-page">
+      <div className="dashboard-shell">
+        <div className="dashboard-header">
+          <h1>DevStorm Admin Dashboard</h1>
+          <p>Manage users and courses from one place.</p>
         </div>
 
-        {/* Cleaned up the style object typo here */}
-        <div style={styles.status}>{status}</div>
+        <div className="dashboard-tabs">
+          <button className={`dashboard-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>Courses Management</button>
+          <button className={`dashboard-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Users Management</button>
+        </div>
+
+        <div className="dashboard-content">
+          {activeTab === 'courses' ? (
+            <>
+              <div className="dashboard-card">
+                <h3>Create Course</h3>
+                <form onSubmit={handleCourseSubmit}>
+                  <div className="dashboard-grid two">
+                    <div>
+                      <label className="dashboard-label">Title</label>
+                      <input className="dashboard-input" value={courseForm.title} onChange={(event) => handleCourseInputChange('title', event.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Category</label>
+                      <input className="dashboard-input" value={courseForm.category} onChange={(event) => handleCourseInputChange('category', event.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Instructor</label>
+                      <input className="dashboard-input" value={courseForm.instructor} onChange={(event) => handleCourseInputChange('instructor', event.target.value)} />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Level</label>
+                      <select className="dashboard-select" value={courseForm.level} onChange={(event) => handleCourseInputChange('level', event.target.value)}>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Price</label>
+                      <input type="number" className="dashboard-input" value={courseForm.price} onChange={(event) => handleCourseInputChange('price', event.target.value)} />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Discount Price</label>
+                      <input type="number" className="dashboard-input" value={courseForm.discount_price} onChange={(event) => handleCourseInputChange('discount_price', event.target.value)} />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Duration</label>
+                      <input className="dashboard-input" value={courseForm.duration} onChange={(event) => handleCourseInputChange('duration', event.target.value)} />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Lessons</label>
+                      <input type="number" className="dashboard-input" value={courseForm.lessons} onChange={(event) => handleCourseInputChange('lessons', event.target.value)} />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Students</label>
+                      <input type="number" className="dashboard-input" value={courseForm.students} onChange={(event) => handleCourseInputChange('students', event.target.value)} />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Rating</label>
+                      <input type="number" step="0.1" className="dashboard-input" value={courseForm.rating} onChange={(event) => handleCourseInputChange('rating', event.target.value)} />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '1rem' }}>
+                    <label className="dashboard-label">Description</label>
+                    <textarea className="dashboard-textarea" value={courseForm.description} onChange={(event) => handleCourseInputChange('description', event.target.value)} required />
+                  </div>
+                  <div style={{ marginTop: '1rem' }}>
+                    <label className="dashboard-label">Topics (comma separated)</label>
+                    <input className="dashboard-input" value={courseForm.topics} onChange={(event) => handleCourseInputChange('topics', event.target.value)} />
+                  </div>
+                  <div className="dashboard-actions">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <input type="checkbox" checked={courseForm.featured} onChange={(event) => handleCourseInputChange('featured', event.target.checked)} />
+                      Featured
+                    </label>
+                    <button className="dashboard-btn primary" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Create Course'}</button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="dashboard-card">
+                <h3>Existing Courses</h3>
+                {courses.length === 0 ? <div className="dashboard-empty">No courses yet.</div> : (
+                  <table className="dashboard-table">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Level</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map(course => (
+                        <tr key={course._id || course.id}>
+                          <td>{course.title}</td>
+                          <td>{course.category}</td>
+                          <td>{course.level}</td>
+                          <td>${Number(course.price || 0).toFixed(2)}</td>
+                          <td>
+                            <button className="dashboard-btn danger" onClick={() => deleteCourse(course._id || course.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="dashboard-card">
+                <h3>Create User</h3>
+                <form onSubmit={handleUserSubmit}>
+                  <div className="dashboard-grid two">
+                    <div>
+                      <label className="dashboard-label">Name</label>
+                      <input className="dashboard-input" value={userForm.name} onChange={(event) => handleUserInputChange('name', event.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Email</label>
+                      <input type="email" className="dashboard-input" value={userForm.email} onChange={(event) => handleUserInputChange('email', event.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Password</label>
+                      <input type="password" className="dashboard-input" value={userForm.password} onChange={(event) => handleUserInputChange('password', event.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Role</label>
+                      <select className="dashboard-select" value={userForm.role} onChange={(event) => handleUserInputChange('role', event.target.value)}>
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="dashboard-actions">
+                    <button className="dashboard-btn primary" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Create User'}</button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="dashboard-card">
+                <h3>Registered Users</h3>
+                {users.length === 0 ? <div className="dashboard-empty">No users yet.</div> : (
+                  <table className="dashboard-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map(user => (
+                        <tr key={user._id || user.id}>
+                          <td>{user.name}</td>
+                          <td>{user.email}</td>
+                          <td>{user.role || 'student'}</td>
+                          <td>{user.emailVerified ? 'Verified' : 'Pending'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="dashboard-status">{status}</div>
+        </div>
       </div>
     </div>
   );

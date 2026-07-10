@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Cookies from 'js-cookie';
+import apiClient, { setAuthToken } from '../api/client';
 import './Auth.css';
 
 const Signup = () => {
@@ -30,19 +30,6 @@ const Signup = () => {
     const [resendTimer, setResendTimer] = useState(0);
     const [tempToken, setTempToken] = useState(null);
     const [tempUserData, setTempUserData] = useState(null);
-
-    // API Configuration
-    const API_ROOT_URL = 'https://api.devstorm.dev';
-    const API_BASE_URL = `${API_ROOT_URL}/api`;
-
-    const apiClient = axios.create({
-        baseURL: API_BASE_URL,
-        withCredentials: true,
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    });
 
     // Resend timer countdown
     useEffect(() => {
@@ -371,7 +358,7 @@ const Signup = () => {
             localStorage.setItem('user_id', userId.toString());
             localStorage.setItem('user', JSON.stringify(userData));
             
-            axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
+            setAuthToken(authData.token, formData.rememberMe);
             
         } catch (error) {
             console.error('Error saving auth data:', error);

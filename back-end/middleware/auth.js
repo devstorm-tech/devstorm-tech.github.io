@@ -3,7 +3,10 @@ const AuthService = require('../services/AuthService');
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.cookies.auth_token;
+    const authHeader = req.headers.authorization || '';
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    const token = bearerToken || req.cookies.auth_token;
+
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized - no token' });
     }
