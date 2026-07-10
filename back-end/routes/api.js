@@ -35,6 +35,7 @@ router.post('/api/logout', auth, AuthController.logout);
 router.get('/api/user', auth, AuthController.getCurrentUser);
 
 router.post('/api/verify-email', AuthController.verifyEmail);
+router.post('/api/verify-email/confirm', AuthController.confirmEmail);
 
 router.post(
   '/api/forgot-password',

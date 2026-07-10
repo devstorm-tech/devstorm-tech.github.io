@@ -247,6 +247,11 @@
     color: #6c757d;
 }
 
+.form-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .password-hint {
     display: flex;
     align-items: center;
@@ -258,6 +263,49 @@
 
 .password-hint i {
     font-size: 0.8rem;
+}
+
+/* Verification Input Specific Styles */
+.verification-input {
+    text-align: center;
+    font-size: 2rem;
+    letter-spacing: 12px;
+    font-family: 'Courier New', monospace;
+    padding: 20px;
+    background: rgba(0, 102, 255, 0.05);
+    border: 2px solid rgba(0, 102, 255, 0.3);
+}
+
+.verification-input:focus {
+    border-color: #0066ff;
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.2);
+    background: rgba(0, 102, 255, 0.08);
+}
+
+.verification-input::placeholder {
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: #4a5568;
+}
+
+.code-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #b0b7c3;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 102, 255, 0.05);
+    border-radius: 6px;
+}
+
+.code-hint .timer {
+    color: #00cc88;
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    min-width: 45px;
 }
 
 /* Form Options */
@@ -293,6 +341,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .checkbox-input:checked + .checkbox-custom {
@@ -304,6 +353,12 @@
     color: white;
     font-size: 12px;
     font-weight: bold;
+}
+
+.checkbox-hint {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-left: 4px;
 }
 
 .forgot-link {
@@ -344,14 +399,72 @@
     margin-bottom: 25px;
 }
 
+.auth-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
 .btn-primary {
     background: linear-gradient(45deg, #0066ff, #00aaff);
     color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 102, 255, 0.4);
+}
+
+.btn-primary.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.95rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert i {
+    font-size: 1.2rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.alert-success {
+    background-color: rgba(0, 204, 136, 0.1);
+    border: 1px solid rgba(0, 204, 136, 0.3);
+    color: #00cc88;
+}
+
+.alert-error {
+    background-color: rgba(255, 71, 87, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    color: #ff4757;
+}
+
+.alert-info {
+    background-color: rgba(0, 170, 255, 0.1);
+    border: 1px solid rgba(0, 170, 255, 0.3);
+    color: #00aaff;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Divider */
@@ -399,9 +512,15 @@
     gap: 10px;
 }
 
-.social-btn:hover {
+.social-btn:hover:not(:disabled) {
     background-color: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
+}
+
+.social-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
 }
 
 .social-btn.github {
@@ -450,6 +569,167 @@
     color: #00aaff;
 }
 
+/* ================ VERIFICATION SPECIFIC STYLES ================ */
+
+/* Verification Info Box */
+.verification-info {
+    margin-bottom: 25px;
+}
+
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(0, 170, 255, 0.05);
+    border: 1px solid rgba(0, 170, 255, 0.2);
+    border-radius: 8px;
+    color: #b0b7c3;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.info-box i {
+    color: #00aaff;
+    font-size: 1.2rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.info-box strong {
+    color: #ffffff;
+}
+
+/* Verification Actions */
+.verification-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0 25px 0;
+    padding: 0 4px;
+}
+
+.resend-btn {
+    background: transparent;
+    border: none;
+    color: #00aaff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resend-btn:hover:not(:disabled) {
+    background: rgba(0, 170, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.resend-btn:disabled {
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.resend-btn i {
+    font-size: 0.9rem;
+}
+
+.back-btn {
+    background: transparent;
+    border: none;
+    color: #b0b7c3;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.back-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Verification Footer Text */
+.verification-footer-text {
+    margin-top: 20px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.verification-footer-text p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #b0b7c3;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.verification-footer-text p:last-child {
+    margin-bottom: 0;
+}
+
+.verification-footer-text i {
+    color: #00aaff;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.verification-footer-text strong {
+    color: #ffffff;
+}
+
+.spam-hint {
+    color: #ffa502 !important;
+    font-size: 0.85rem !important;
+}
+
+.spam-hint i {
+    color: #ffa502 !important;
+}
+
+/* Verification Footer */
+.verification-footer {
+    padding: 10px 0;
+}
+
+/* Session Info */
+.session-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+    margin-top: 20px;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.session-info i {
+    color: #00aaff;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
 /* Code Snippet */
 .auth-code-snippet {
     background-color: rgba(0, 0, 0, 0.2);
@@ -496,7 +776,21 @@
     color: #ffffff;
 }
 
-/* Responsive Design */
+/* Loading Spinner Animation */
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design for Verification */
 @media (max-width: 992px) {
     .auth-wrapper {
         grid-template-columns: 1fr;
@@ -544,6 +838,23 @@
         align-items: flex-start;
         gap: 15px;
     }
+    
+    .verification-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .resend-btn,
+    .back-btn {
+        justify-content: center;
+    }
+    
+    .verification-input {
+        font-size: 1.5rem;
+        letter-spacing: 8px;
+        padding: 16px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -562,4 +873,153 @@
     .auth-features {
         align-items: flex-start;
     }
+    
+    .auth-card {
+        padding: 20px 15px;
+    }
+    
+    .verification-input {
+        font-size: 1.2rem;
+        letter-spacing: 6px;
+        padding: 14px;
+    }
+    
+    .code-hint {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    
+    .info-box {
+        font-size: 0.85rem;
+        padding: 12px 16px;
+    }
+    
+    .verification-footer-text p {
+        font-size: 0.8rem;
+        flex-wrap: wrap;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+    .auth-card {
+        padding: 15px 10px;
+    }
+    
+    .verification-input {
+        font-size: 1rem;
+        letter-spacing: 4px;
+        padding: 12px;
+    }
+    
+    .auth-btn {
+        font-size: 0.95rem;
+        padding: 14px;
+    }
+}
+
+/* Dark mode scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0e17;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0066ff;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00aaff;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+    outline: 2px solid #0066ff;
+    outline-offset: 2px;
+}
+
+/* Smooth transitions */
+.auth-card,
+.form-input,
+.auth-btn,
+.social-btn,
+.resend-btn,
+.back-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glow effect for verification input when focused */
+.verification-input:focus {
+    animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(0, 102, 255, 0.4);
+    }
+}
+
+/* Timer warning state */
+.timer.warning {
+    color: #ffa502;
+}
+
+.timer.danger {
+    color: #ff4757;
+    animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Verification code digit boxes (for future enhancement) */
+.verification-digits {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.verification-digit {
+    width: 50px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-family: 'Courier New', monospace;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.verification-digit.active {
+    border-color: #0066ff;
+    background: rgba(0, 102, 255, 0.05);
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+.verification-digit.filled {
+    border-color: #00cc88;
+    background: rgba(0, 204, 136, 0.05);
+}
+
+.verification-digit.error {
+    border-color: #ff4757;
+    background: rgba(255, 71, 87, 0.05);
 }

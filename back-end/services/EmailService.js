@@ -5,26 +5,28 @@ class EmailService {
     return nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
-      secure: false, // true for port 465, false for other ports like 587
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER, // Your Brevo identifier (b169d6001...)
-        pass: process.env.EMAIL_PASS, // Your generated SMTP key
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
   }
 
-  static async sendVerificationEmail(email, name, token) {
+  static async sendVerificationEmail(email, name, otpCode) {
     const transporter = this.createTransporter();
-    const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
     const mailOptions = {
-      from: '"devStorm Academy" <contact@devstorm.dev>', 
+      from: '"devStorm Academy" <verify@devstorm.dev>',
       to: email,
-      subject: 'Verify your email - devStorm Academy',
+      subject: 'Your DevStorm verification code',
       html: `
-        <h1>Welcome to devStorm Academy, ${name}!</h1>
-        <p>Please verify your email by clicking the link below:</p>
-        <a href="${verificationUrl}">Verify Email</a>
-        <p>This link expires in 24 hours.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
+          <h2 style="color: #0f172a;">Welcome to DevStorm, ${name || 'there'}!</h2>
+          <p>Please use the following 6-digit verification code to confirm your email address:</p>
+          <div style="font-size: 32px; font-weight: 700; letter-spacing: 6px; margin: 24px 0; color: #2563eb;">${otpCode}</div>
+          <p>This code expires in 5 minutes.</p>
+          <p>If you did not create an account with DevStorm, you can safely ignore this email.</p>
+        </div>
       `,
     };
     await transporter.sendMail(mailOptions);

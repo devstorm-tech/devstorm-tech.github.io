@@ -69,10 +69,39 @@ class AuthController {
   // POST /api/verify-email
   static async verifyEmail(req, res, next) {
     try {
-      const { token } = req.body;
-      const user = await AuthService.verifyEmail(token);
+      const { email, token, type } = req.body;
+
+      if (type === 'signup_verification') {
+        await AuthService.sendVerificationOtp(email);
+        return res.status(200).json({ success: true, message: 'Verification code sent to your email' });
+      }
+
+      await AuthService.verifyEmail(token);
       res.status(200).json({ success: true, message: 'Email verified successfully' });
     } catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({ success: false, message: error.message });
+      }
+      next(error);
+    }
+  }
+
+  // POST /api/verify-email/confirm
+  static async confirmEmail(req, res, next) {
+    try {
+      const { email, code } = req.body;
+      await AuthService.confirmEmailOtp(email, code);
+      res.status(200).json({ success: true, message: 'Email verified successfully' });
+    } catch (error) {
+      if (error.message === 'Invalid verification code') {
+        return res.status(401).json({ success: false, message: error.message });
+      }
+      if (error.message === 'Verification code expired') {
+        return res.status(404).json({ success: false, message: error.message });
+      }
+      if (error.message === 'User not found') {
+        return res.status(404).json({ success: false, message: error.message });
+      }
       next(error);
     }
   }

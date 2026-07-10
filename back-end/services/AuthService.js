@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const TokenService = require('./TokenService');
 const EmailService = require('./EmailService');
+const OtpService = require('./OtpService');
 const crypto = require('crypto');
 
 class AuthService {
@@ -19,21 +20,19 @@ class AuthService {
       throw new Error('Email already registered');
     }
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    const verificationOtp = OtpService.generateOtpCode();
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
     const user = new User({
       name,
       email,
       password,
-      verificationToken,
-      verificationTokenExpires: tokenExpires,
+      verificationOtp,
+      verificationOtpExpires: otpExpires,
     });
     await user.save();
 
-    // Send verification email (non-blocking)
-    EmailService.sendVerificationEmail(email, name, verificationToken).catch(console.error);
+    EmailService.sendVerificationEmail(email, name, verificationOtp).catch(console.error);
 
     // Generate JWT token
     const jwtToken = TokenService.generateToken(user._id);
@@ -99,6 +98,42 @@ class AuthService {
     user.emailVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
+    await user.save();
+    return user;
+  }
+
+  static async sendVerificationOtp(email) {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const verificationOtp = OtpService.generateOtpCode();
+    user.verificationOtp = verificationOtp;
+    user.verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000);
+    await user.save();
+
+    await EmailService.sendVerificationEmail(user.email, user.name, verificationOtp);
+    return true;
+  }
+
+  static async confirmEmailOtp(email, code) {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!user.verificationOtp || OtpService.isOtpExpired(user.verificationOtpExpires)) {
+      throw new Error('Verification code expired');
+    }
+
+    if (String(user.verificationOtp) !== String(code).trim()) {
+      throw new Error('Invalid verification code');
+    }
+
+    user.emailVerified = true;
+    user.verificationOtp = undefined;
+    user.verificationOtpExpires = undefined;
     await user.save();
     return user;
   }
