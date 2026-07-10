@@ -49,7 +49,6 @@ function App() {
                     <Route path="/compiler" element={<Compiler />} />
                     <Route path="/profile" element={<MyProfile />} />
                     <Route path="/dashboard" element={<Dashboard />} />
-
                     {/* Redirect old /course route to courses page */}
                     <Route path="/course" element={<Navigate to="/courses" />} />
                     

@@ -59,6 +59,7 @@
     margin: 40px auto;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
 }
 
 .search-container {
@@ -127,6 +128,9 @@
 
 .search-filters-btn {
     background-color: #0066ff;
+
+    padding: 10px;
+    border-radius: 20px;
     color: white;
 }
 

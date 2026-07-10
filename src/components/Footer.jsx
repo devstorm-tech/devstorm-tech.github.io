@@ -56,8 +56,7 @@ const Footer = () => {
                 </div>
 
                 <div className="copyright">
-                    <p>&copy; {currentYear} DevStorm. All rights reserved. <span className="highlight">Censole 100</span></p>
-                    <p className="signature">dv# D/v/&gt;</p>
+                    <p>&copy; {currentYear} DevStorm. All rights reserved.</p>
                 </div>
             </div>
         </footer>
