@@ -243,6 +243,7 @@ export default function Dashboard() {
     setUserForm({
       name: user.name || '',
       email: user.email || '',
+      role: user.role || 'user',
       password: '', // Kept empty for security unless they type a new one
     });
     setStatus(`Editing user: ${user.name}`);
