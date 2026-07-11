@@ -216,7 +216,7 @@ export default function Dashboard() {
     }
   };
 
-  
+
   const deleteUser = async (id) => {
     try {
       await apiFetch(`/users/${id}`, {
@@ -385,6 +385,18 @@ export default function Dashboard() {
                       <label className="dashboard-label font-small">Password {editingUserId && '(Leave blank to keep same)'}</label>
                       <input type="password" className="dashboard-input" value={userForm.password} onChange={(event) => handleUserInputChange('password', event.target.value)} required={!editingUserId} />
                     </div>
+                    <div>
+                      <label className="dashboard-label">Role</label>
+                      <select 
+                        className="dashboard-select" 
+                        value={userForm.role || 'user'} 
+                        onChange={(event) => handleUserInputChange('role', event.target.value)}>
+                        <option value="user">User</option>
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                        <option value="instructor">Instructor</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="dashboard-actions" style={{ gap: '0.75rem' }}>
                     <button className="dashboard-btn primary" type="submit" disabled={isSaving}>
@@ -416,6 +428,7 @@ export default function Dashboard() {
                         <tr key={user._id || user.id}>
                           <td>{user.name}</td>
                           <td>{user.email}</td>
+                          <td>{user.role}</td>
                           <td>{user.emailVerified ? 'Verified' : 'Pending'}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
