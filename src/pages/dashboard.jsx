@@ -106,9 +106,10 @@ export default function Dashboard() {
     }
   };
 
+  // 1. Updated path to explicitly map to your router configuration: /api/users
   const loadUsers = async () => {
     try {
-      const data = await apiFetch('/users');
+      const data = await apiFetch('/api/users');
       setUsers(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
     } catch (error) {
       setStatus(`Could not load users: ${error.message}`);
@@ -154,13 +155,21 @@ export default function Dashboard() {
     }
   };
 
+  // 2. Updated to point to /api/users and attached application/json + Bearer token headers for your backend auth / validate layers
   const handleUserSubmit = async (event) => {
     event.preventDefault();
     setIsSaving(true);
     setStatus('Creating user...');
 
     try {
-      const result = await apiFetch('/users', { method: 'POST', body: JSON.stringify(userForm) });
+      const result = await apiFetch('/api/users', { 
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        data: userForm // axios apiClient uses 'data' instead of stringified 'body'
+      });
       setUsers(prev => [result.data || result, ...prev]);
       setUserForm(emptyUserForm);
       setStatus('User created successfully.');
@@ -178,6 +187,22 @@ export default function Dashboard() {
       setStatus('Course deleted.');
     } catch (error) {
       setStatus(`Course delete failed: ${error.message}`);
+    }
+  };
+
+  // 3. Implemented delete user execution map to match router.delete('/api/users/:id', auth, ...)
+  const deleteUser = async (id) => {
+    try {
+      await apiFetch(`/api/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      setUsers(prev => prev.filter(user => user._id !== id && user.id !== id));
+      setStatus('User deleted.');
+    } catch (error) {
+      setStatus(`User delete failed: ${error.message}`);
     }
   };
 
@@ -336,6 +361,7 @@ export default function Dashboard() {
                         <th>Email</th>
                         <th>Role</th>
                         <th>Status</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -345,6 +371,9 @@ export default function Dashboard() {
                           <td>{user.email}</td>
                           <td>{user.role || 'student'}</td>
                           <td>{user.emailVerified ? 'Verified' : 'Pending'}</td>
+                          <td>
+                            <button className="dashboard-btn danger" onClick={() => deleteUser(user._id || user.id)}>Delete</button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
