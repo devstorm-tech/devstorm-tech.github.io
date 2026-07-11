@@ -54,6 +54,7 @@ class UserService {
     if (!user) return null;
 
     if (payload.name !== undefined) user.name = payload.name.trim();
+    if (payload.role !== undefined) user.role = payload.role.trim();
     if (payload.email !== undefined) user.email = payload.email.trim().toLowerCase();
     if (payload.emailVerified !== undefined) user.emailVerified = Boolean(payload.emailVerified);
     
