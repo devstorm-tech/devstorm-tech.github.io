@@ -1,8 +1,10 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { API_BASE_URL } from './config';
 
-const API_ROOT_URL = 'https://api.devstorm.dev';
-const API_BASE_URL = `${API_ROOT_URL}/api`;
+let csrfToken = '';
+let isRefreshingCsrf = false;
+let pendingQueue = [];
 
 const getStoredAuthToken = () => {
   if (typeof window === 'undefined') {
@@ -56,6 +58,40 @@ export const clearAuthToken = () => {
   setAuthToken('');
 };
 
+export const fetchCsrfToken = async () => {
+  if (csrfToken) {
+    return csrfToken;
+  }
+
+  if (isRefreshingCsrf) {
+    return new Promise((resolve) => {
+      pendingQueue.push(resolve);
+    });
+  }
+
+  isRefreshingCsrf = true;
+  try {
+    const response = await apiClient.get('/csrf-token');
+    csrfToken = response?.data?.csrfToken || '';
+    return csrfToken;
+  } catch (error) {
+    csrfToken = '';
+    return '';
+  } finally {
+    isRefreshingCsrf = false;
+    pendingQueue.forEach((resolve) => resolve(csrfToken));
+    pendingQueue = [];
+  }
+};
+
+export const bootstrapCsrf = async () => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return fetchCsrfToken();
+};
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
@@ -67,11 +103,19 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = getStoredAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+      const tokenValue = await fetchCsrfToken();
+      if (tokenValue) {
+        config.headers['x-csrf-token'] = tokenValue;
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -79,9 +123,10 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
     const payload = error.response?.data;
+    const config = error.config;
 
     if (status === 401) {
       clearAuthToken();
@@ -91,6 +136,17 @@ apiClient.interceptors.response.use(
 
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+
+    if (status === 403 && payload?.message?.toLowerCase().includes('csrf') && !config.__isRetry) {
+      csrfToken = '';
+      const token = await fetchCsrfToken();
+      if (token) {
+        config.__isRetry = true;
+        config.headers['x-csrf-token'] = token;
+        return apiClient(config);
       }
     }
 

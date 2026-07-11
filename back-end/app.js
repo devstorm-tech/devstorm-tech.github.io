@@ -11,6 +11,16 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 app.set('trust proxy', 1);
 
+// Defensive boot-time logging for uncaught errors
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION (server boot):', err && err.stack ? err.stack : err);
+  // In production you might want to exit process or alert a monitoring service
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION (server boot):', reason && reason.stack ? reason.stack : reason);
+});
+
 // Connect to MongoDB
 connectDB();
 

@@ -4,7 +4,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import { AuthProvider } from './context/AuthContext';
-import { AdminProtectedRoute, EmailVerificationRoute } from './components/ProtectedRoutes';
+import { AdminProtectedRoute, EmailVerificationProtectedRoute } from './components/ProtectedRoutes';
+import { fetchCsrfToken } from './api/client';
 import Home from './pages/Home';
 import About from './pages/About';
 import Courses from './pages/Courses';
@@ -27,6 +28,8 @@ function App() {
         link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
         document.head.appendChild(link);
 
+        fetchCsrfToken().catch(() => {});
+
         return () => {
             document.head.removeChild(link);
         };
@@ -46,11 +49,11 @@ function App() {
                         <Route path="/store" element={<DvsStore />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
-                        <Route path="/courses" element={<EmailVerificationRoute><Courses /></EmailVerificationRoute>} />
-                        <Route path="/course/:id" element={<EmailVerificationRoute><SingleCourse /></EmailVerificationRoute>} />
-                        <Route path="/cloud-linux" element={<EmailVerificationRoute><CloudLinux /></EmailVerificationRoute>} />
-                        <Route path="/compiler" element={<EmailVerificationRoute><Compiler /></EmailVerificationRoute>} />
-                        <Route path="/profile" element={<EmailVerificationRoute><MyProfile /></EmailVerificationRoute>} />
+                        <Route path="/courses" element={<EmailVerificationProtectedRoute><Courses /></EmailVerificationProtectedRoute>} />
+                        <Route path="/course/:id" element={<EmailVerificationProtectedRoute><SingleCourse /></EmailVerificationProtectedRoute>} />
+                        <Route path="/cloud-linux" element={<EmailVerificationProtectedRoute><CloudLinux /></EmailVerificationProtectedRoute>} />
+                        <Route path="/compiler" element={<EmailVerificationProtectedRoute><Compiler /></EmailVerificationProtectedRoute>} />
+                        <Route path="/profile" element={<EmailVerificationProtectedRoute><MyProfile /></EmailVerificationProtectedRoute>} />
                         <Route path="/dashboard" element={<AdminProtectedRoute><Dashboard /></AdminProtectedRoute>} />
                         {/* Redirect old /course route to courses page */}
                         <Route path="/course" element={<Navigate to="/courses" />} />

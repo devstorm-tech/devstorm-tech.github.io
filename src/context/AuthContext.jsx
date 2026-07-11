@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import apiClient from '../api/client';
+import API from '../api/client';
 
 const AuthContext = createContext(null);
 
@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await apiClient.get('/user');
+      const response = await API.get('/user');
       setUser(response?.data?.data?.user || null);
     } catch (error) {
       setUser(null);

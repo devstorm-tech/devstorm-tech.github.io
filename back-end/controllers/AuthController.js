@@ -8,22 +8,12 @@ class AuthController {
   static async signup(req, res, next) {
     try {
       const authData = await AuthService.register(req.body);
-      // Set JWT in HTTP-only cookie
-      TokenService.setAuthCookie(res, authData.token, req.body.rememberMe || false);
-      res.status(201).json({
-        success: true,
-        data: {
-          user: authData.user,
-          auth: {
-            token: authData.token,
-            token_type: authData.token_type,
-            expires_at: authData.expires_at,
-          },
-        },
-      });
+      res.status(201).json({ success: true, data: authData });
     } catch (error) {
-      // Custom error handling: 409 for duplicate email
-      if (error.message.includes('Email already registered')) {
+      if (error.status === 400) {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      if (error.status === 409) {
         return res.status(409).json({ success: false, message: error.message });
       }
       next(error);
@@ -93,21 +83,35 @@ class AuthController {
     }
   }
 
-  // POST /api/verify-email/confirm
-  static async confirmEmail(req, res, next) {
+  // POST /api/auth/verify-otp
+  static async verifyOtp(req, res, next) {
     try {
-      const { email, code } = req.body;
-      await AuthService.confirmEmailOtp(email, code);
-      res.status(200).json({ success: true, message: 'Email verified successfully' });
+      const { email, code, rememberMe } = req.body;
+      const authData = await AuthService.verifyOtp(email, code);
+      TokenService.setAuthCookie(res, authData.token, rememberMe || false);
+      res.status(200).json({
+        success: true,
+        data: {
+          user: authData.user,
+          auth: {
+            token: authData.token,
+            token_type: authData.token_type,
+            expires_at: authData.expires_at,
+          },
+        },
+      });
     } catch (error) {
+      if (error.status === 400) {
+        return res.status(400).json({ success: false, message: error.message });
+      }
       if (error.status === 401) {
         return res.status(401).json({ success: false, message: error.message });
       }
-      if (error.status === 410) {
-        return res.status(410).json({ success: false, message: error.message });
-      }
       if (error.status === 404) {
         return res.status(404).json({ success: false, message: error.message });
+      }
+      if (error.status === 410) {
+        return res.status(410).json({ success: false, message: error.message });
       }
       if (error.status === 503) {
         return res.status(503).json({ success: false, message: error.message });

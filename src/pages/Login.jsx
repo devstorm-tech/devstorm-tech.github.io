@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Cookies from 'js-cookie';
+import API, { fetchCsrfToken } from '../api/client';
+import { API_BASE_URL } from '../api/config';
 import './Auth.css';
 
 const Login = () => {
@@ -14,19 +15,6 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
-
-    // 1. HARDCODED PRODUCTION DOMAIN
-    const API_ROOT_URL = 'https://api.devstorm.dev';
-    const API_BASE_URL = `${API_ROOT_URL}/api`;
-
-    const apiClient = axios.create({
-        baseURL: API_BASE_URL, // Set directly to your API prefix
-        withCredentials: true,
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    });
 
     useEffect(() => {
         // Load remembered email on component mount
@@ -131,9 +119,6 @@ const Login = () => {
             localStorage.setItem('user_id', userId.toString());
             localStorage.setItem('user', JSON.stringify(userData));
             
-            // Set token for future requests
-            axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
-            
         } catch (error) {
             console.error('Error saving auth data:', error);
             setError('Failed to save authentication data');
@@ -179,10 +164,10 @@ const Login = () => {
                 password: formData.password
             };
             
-            console.log('📤 Making login request to:', `${API_BASE_URL}/login`);
+            await fetchCsrfToken();
+            console.log('📤 Making login request to:', '/login');
             
-            // Post directly to /login via your BaseURL config
-            const response = await apiClient.post('/login', loginData);
+            const response = await API.post('/login', loginData);
             console.log('✅ Login response:', response.data);
             
             // Checks standard Node response patterns (e.g., { success: true } or look for token directly)

@@ -1,4 +1,6 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const PendingUser = require('../models/PendingUser');
 const TokenService = require('./TokenService');
 const EmailService = require('./EmailService');
 const OtpService = require('./OtpService');
@@ -16,43 +18,43 @@ const normalizeUserPayload = (user) => ({
 });
 
 class AuthService {
-  // Register a new user
+  // Register a new user in a pending state
   static async register(userData) {
     const { name, email, password, password_confirmation } = userData;
 
-    // Password confirmation (already validated in controller)
     if (password !== password_confirmation) {
-      throw new Error('Passwords do not match');
+      throw Object.assign(new Error('Passwords do not match'), { status: 400 });
     }
 
-    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new Error('Email already registered');
+      throw Object.assign(new Error('Email already registered'), { status: 409 });
+    }
+
+    const existingPending = await PendingUser.findOne({ email });
+    if (existingPending) {
+      await PendingUser.deleteOne({ _id: existingPending._id });
     }
 
     const verificationOtp = OtpService.generateOtpCode();
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = new User({
+    const pendingUser = new PendingUser({
       name,
       email,
-      password,
+      passwordHash,
       verificationOtp,
       verificationOtpExpires: otpExpires,
     });
-    await user.save();
 
-    EmailService.sendVerificationEmail(email, name, verificationOtp).catch(console.error);
-
-    // Generate JWT token
-    const jwtToken = TokenService.generateToken(user._id);
+    await pendingUser.save();
+    await EmailService.sendVerificationEmail(email, name, verificationOtp).catch(console.error);
 
     return {
-      user: normalizeUserPayload(user),
-      token: jwtToken,
-      token_type: 'Bearer',
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      pending: true,
+      message: 'Verification code sent. Complete verification to finish registration.',
+      expiresAt: otpExpires.toISOString(),
     };
   }
 
@@ -117,19 +119,85 @@ class AuthService {
     }
   }
 
+  static async verifyOtp(email, code) {
+    try {
+      const pendingUser = await PendingUser.findOne({ email });
+      if (!pendingUser) {
+        throw Object.assign(new Error('Pending registration not found'), { status: 404 });
+      }
+
+      if (OtpService.isOtpExpired(pendingUser.verificationOtpExpires)) {
+        await PendingUser.deleteOne({ _id: pendingUser._id });
+        throw Object.assign(new Error('Invalid or expired verification code. Please try again.'), { status: 400 });
+      }
+
+      if (String(pendingUser.verificationOtp) !== String(code).trim()) {
+        throw Object.assign(new Error('Invalid or expired verification code. Please try again.'), { status: 400 });
+      }
+
+      const session = await PendingUser.startSession();
+      let permanentUser;
+
+      try {
+        session.startTransaction();
+
+        permanentUser = new User({
+          name: pendingUser.name,
+          email: pendingUser.email,
+          password: pendingUser.passwordHash,
+          emailVerified: true,
+        });
+
+        await permanentUser.save({ session });
+        await PendingUser.deleteOne({ _id: pendingUser._id }, { session });
+        await session.commitTransaction();
+      } catch (transactionError) {
+        await session.abortTransaction();
+        throw transactionError;
+      } finally {
+        session.endSession();
+      }
+
+      const jwtToken = TokenService.generateToken(permanentUser._id);
+      return {
+        user: normalizeUserPayload(permanentUser),
+        token: jwtToken,
+        token_type: 'Bearer',
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+    } catch (error) {
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+        throw Object.assign(new Error('Verification service temporarily unavailable'), { status: 503 });
+      }
+
+      throw error;
+    }
+  }
+
   static async sendVerificationOtp(email) {
     try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        throw Object.assign(new Error('User not found'), { status: 404 });
+      let pendingUser = await PendingUser.findOne({ email });
+      if (!pendingUser) {
+        const user = await User.findOne({ email });
+        if (!user) {
+          throw Object.assign(new Error('User not found'), { status: 404 });
+        }
+
+        pendingUser = new PendingUser({
+          name: user.name,
+          email: user.email,
+          passwordHash: user.password,
+          verificationOtp: OtpService.generateOtpCode(),
+          verificationOtpExpires: new Date(Date.now() + 15 * 60 * 1000),
+        });
       }
 
       const verificationOtp = OtpService.generateOtpCode();
-      user.verificationOtp = verificationOtp;
-      user.verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000);
-      await user.save();
+      pendingUser.verificationOtp = verificationOtp;
+      pendingUser.verificationOtpExpires = new Date(Date.now() + 15 * 60 * 1000);
+      await pendingUser.save();
 
-      await EmailService.sendVerificationEmail(user.email, user.name, verificationOtp);
+      await EmailService.sendVerificationEmail(pendingUser.email, pendingUser.name, verificationOtp);
       return true;
     } catch (error) {
       if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../api/config';
 import './MyProfile.css';
-
-// API base URL - adjust this based on your Laravel setup
-const API_BASE_URL = 'http://localhost:8000/api';
 
 const MyProfile = () => {
     const navigate = useNavigate();

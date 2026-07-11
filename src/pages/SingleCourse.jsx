@@ -2,10 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { API_BASE_URL } from '../api/config';
 import './SingleCourse.css';
-
-// API base URL
-const API_BASE_URL = 'http://localhost:8000/api';
 
 // Configure axios to include credentials for Sanctum
 axios.defaults.withCredentials = true;

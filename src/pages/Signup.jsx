@@ -105,7 +105,7 @@ const Signup = () => {
 
         try {
             // Making the request to your API domain
-            const response = await apiClient.post('/signup', {
+            const response = await apiClient.post('/auth/register', {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
@@ -116,35 +116,17 @@ const Signup = () => {
 
             console.log('✅ Signup response:', response.data);
 
-            // Check if signup was successful
-            if (response.data.success || response.data.token) {
-                const payload = response.data.data || response.data;
-                const userData = payload.user;
-                const userId = userData._id || userData.id || userData.user_id;
-                
-                if (!userId) {
-                    throw new Error('User ID not found in response');
-                }
-
-                const authToken = payload.token || (payload.auth && payload.auth.token);
-                
-                // Store temporary data for verification
-                setTempToken(authToken);
-                setTempUserData(userData);
-
-                // Send verification email
-                const emailSent = await sendVerificationEmail(formData.email, authToken);
-                
-                if (emailSent) {
-                    setShowVerification(true);
-                    setSuccess('Account created! Please verify your email.');
-                    setError('');
-                } else {
-                    setError('Account created but failed to send verification email. Please try again.');
-                }
-            } else {
-                setError(response.data.message || 'Signup failed');
+            const payload = response.data.data || response.data;
+            if (response.data.success && payload.pending) {
+                setShowVerification(true);
+                setSuccess(payload.message || 'Account created! Please verify your email.');
+                setError('');
+                setTempToken(null);
+                setTempUserData(null);
+                return;
             }
+
+            setError(response.data.message || 'Signup failed');
 
         } catch (err) {
             console.error('❌ Signup error:', err);
@@ -190,32 +172,35 @@ const Signup = () => {
         setVerificationError('');
         
         try {
-            const response = await apiClient.post('/verify-email/confirm', {
+            const response = await apiClient.post('/auth/verify-otp', {
                 email: formData.email,
                 code: verificationCode,
-                token: tempToken
+                rememberMe: formData.rememberMe
             });
             
             if (response.data.success) {
-                // Verification successful, complete signup and login
+                const payload = response.data.data || response.data;
+                const userData = payload.user || payload.data?.user;
+                const authToken = payload.auth?.token || payload.token;
+
                 saveAuthData({
-                    token: tempToken,
-                    user: tempUserData
+                    token: authToken,
+                    user: userData
                 });
                 
-                sessionStorage.setItem('api_token', tempToken);
+                sessionStorage.setItem('api_token', authToken);
                 
-                const redirectTo = localStorage.getItem('redirectAfterLogin') || '/';
+                const redirectTo = localStorage.getItem('redirectAfterLogin') || '/dashboard';
                 localStorage.removeItem('redirectAfterLogin');
                 
                 window.dispatchEvent(new CustomEvent('authChange', {
                     detail: { 
-                        userId: tempUserData._id || tempUserData.id, 
+                        userId: userData?._id || userData?.id, 
                         isAuthenticated: true 
                     }
                 }));
                 
-                setSuccess('✅ Email verified successfully! Redirecting to dashboard...');
+                setSuccess('✅ Email verified successfully! Redirecting to your dashboard...');
                 setError('');
                 setVerificationError('');
                 
@@ -230,8 +215,8 @@ const Signup = () => {
             console.error('❌ Verification error:', error);
             
             if (error.response) {
-                if (error.response.status === 401) {
-                    setVerificationError('Invalid verification code. Please check and try again.');
+                if (error.response.status === 400 || error.response.status === 401 || error.response.status === 422) {
+                    setVerificationError(error.response?.data?.message || 'Invalid or expired verification code. Please try again.');
                 } else if (error.response.status === 404) {
                     setVerificationError('Verification code expired (5 minutes). Please request a new one.');
                 } else if (error.response.status === 429) {

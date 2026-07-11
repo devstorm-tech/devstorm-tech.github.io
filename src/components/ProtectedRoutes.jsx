@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotFound from '../pages/NotFound';
+import API from '../api/client';
 
 export const AdminProtectedRoute = ({ children }) => {
   const { user, isLoading, isAuthenticated, isAdmin } = useAuth();
@@ -22,7 +23,7 @@ export const AdminProtectedRoute = ({ children }) => {
   return children;
 };
 
-export const EmailVerificationRoute = ({ children }) => {
+export const EmailVerificationProtectedRoute = ({ children }) => {
   const { user, isLoading, isAuthenticated, isVerified } = useAuth();
   const location = useLocation();
 
@@ -41,6 +42,8 @@ export const EmailVerificationRoute = ({ children }) => {
   return children;
 };
 
+export const EmailVerificationRoute = EmailVerificationProtectedRoute;
+
 export const VerifyEmailScreen = () => {
   const { user, refreshUser } = useAuth();
   const [isResending, setIsResending] = React.useState(false);
@@ -51,17 +54,13 @@ export const VerifyEmailScreen = () => {
     setMessage('Sending a new verification email...');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://api.devstorm.dev'}/api/verify-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${document.cookie.replace(/(?:(?:^|.*;\s*)auth_token=([^;]*).*$)|^.*$/, '$1')}`,
-        },
-        body: JSON.stringify({ email: user?.email, type: 'signup_verification' }),
+      const response = await API.post('/verify-email', {
+        email: user?.email,
+        type: 'signup_verification',
       });
 
-      const payload = await response.json();
-      if (!response.ok) {
+      const payload = response?.data || {};
+      if (!response?.status || response.status >= 400) {
         throw new Error(payload.message || 'Unable to resend verification email');
       }
 
