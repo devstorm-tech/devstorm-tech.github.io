@@ -108,7 +108,7 @@ export default function Dashboard() {
   // 1. Updated path to explicitly map to your router configuration: /api/users
   const loadUsers = async () => {
     try {
-      const data = await apiFetch('/api/users');
+      const data = await apiFetch('/users');
       setUsers(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
     } catch (error) {
       setStatus(`Could not load users: ${error.message}`);
