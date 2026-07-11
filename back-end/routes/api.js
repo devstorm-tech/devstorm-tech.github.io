@@ -3,6 +3,7 @@ const AuthController = require('../controllers/AuthController');
 const CourseController = require('../controllers/CourseController');
 const UserController = require('../controllers/UserController')
 const auth = require('../middleware/auth');
+const { ensureEmailIsVerified, isAdmin } = require('../middleware/ensureEmailIsVerified');
 const { setCsrfCookie } = require('../middleware/csrf');
 const {
   signupValidation,
@@ -59,9 +60,14 @@ router.post(
 router.get('/api/courses', CourseController.listCourses);
 router.get('/api/courses/:id', CourseController.getCourse);
 router.get('/api/courses/slug/:slug', CourseController.getCourse);
-router.post('/api/courses', auth, courseValidation, validate, CourseController.createCourse);
-router.put('/api/courses/:id', auth, courseValidation, validate, CourseController.updateCourse);
-router.delete('/api/courses/:id', auth, CourseController.deleteCourse);
+router.post('/api/courses', auth, ensureEmailIsVerified, courseValidation, validate, CourseController.createCourse);
+router.put('/api/courses/:id', auth, ensureEmailIsVerified, courseValidation, validate, CourseController.updateCourse);
+router.delete('/api/courses/:id', auth, ensureEmailIsVerified, CourseController.deleteCourse);
+
+// Admin-only routes
+router.get('/api/admin/dashboard', auth, isAdmin, (req, res) => {
+  res.status(200).json({ success: true, data: { message: 'Admin dashboard access granted', user: req.user } });
+});
 
 // User routes
 router.get('/api/users', UserController.listUsers);

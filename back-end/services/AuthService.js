@@ -4,6 +4,17 @@ const EmailService = require('./EmailService');
 const OtpService = require('./OtpService');
 const crypto = require('crypto');
 
+const normalizeUserPayload = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role || 'user',
+  emailVerified: Boolean(user.emailVerified),
+  isVerified: Boolean(user.emailVerified),
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});
+
 class AuthService {
   // Register a new user
   static async register(userData) {
@@ -38,12 +49,7 @@ class AuthService {
     const jwtToken = TokenService.generateToken(user._id);
 
     return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        emailVerified: user.emailVerified,
-      },
+      user: normalizeUserPayload(user),
       token: jwtToken,
       token_type: 'Bearer',
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -72,12 +78,7 @@ class AuthService {
     const jwtToken = TokenService.generateToken(user._id, expiresIn);
 
     return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        emailVerified: user.emailVerified,
-      },
+      user: normalizeUserPayload(user),
       token: jwtToken,
       token_type: 'Bearer',
       expires_at: new Date(Date.now() + (rememberMe ? 7 : 1) * 24 * 60 * 60 * 1000).toISOString(),
@@ -88,54 +89,84 @@ class AuthService {
 
   // Verify email
   static async verifyEmail(token) {
-    const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() },
-    });
-    if (!user) {
-      throw new Error('Invalid or expired verification token');
+    try {
+      const user = await User.findOne({
+        verificationToken: token,
+        verificationTokenExpires: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        throw Object.assign(new Error('Invalid or expired verification token'), { status: 400 });
+      }
+
+      user.emailVerified = true;
+      user.verificationToken = undefined;
+      user.verificationTokenExpires = undefined;
+      await user.save();
+      return user;
+    } catch (error) {
+      if (error.name === 'CastError') {
+        throw Object.assign(new Error('Malformed verification token'), { status: 400 });
+      }
+
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+        throw Object.assign(new Error('Verification service temporarily unavailable'), { status: 503 });
+      }
+
+      throw error;
     }
-    user.emailVerified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpires = undefined;
-    await user.save();
-    return user;
   }
 
   static async sendVerificationOtp(email) {
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new Error('User not found');
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw Object.assign(new Error('User not found'), { status: 404 });
+      }
+
+      const verificationOtp = OtpService.generateOtpCode();
+      user.verificationOtp = verificationOtp;
+      user.verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000);
+      await user.save();
+
+      await EmailService.sendVerificationEmail(user.email, user.name, verificationOtp);
+      return true;
+    } catch (error) {
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+        throw Object.assign(new Error('Verification email service temporarily unavailable'), { status: 503 });
+      }
+
+      throw error;
     }
-
-    const verificationOtp = OtpService.generateOtpCode();
-    user.verificationOtp = verificationOtp;
-    user.verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000);
-    await user.save();
-
-    await EmailService.sendVerificationEmail(user.email, user.name, verificationOtp);
-    return true;
   }
 
   static async confirmEmailOtp(email, code) {
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new Error('User not found');
-    }
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw Object.assign(new Error('User not found'), { status: 404 });
+      }
 
-    if (!user.verificationOtp || OtpService.isOtpExpired(user.verificationOtpExpires)) {
-      throw new Error('Verification code expired');
-    }
+      if (!user.verificationOtp || OtpService.isOtpExpired(user.verificationOtpExpires)) {
+        throw Object.assign(new Error('Verification code expired'), { status: 410 });
+      }
 
-    if (String(user.verificationOtp) !== String(code).trim()) {
-      throw new Error('Invalid verification code');
-    }
+      if (String(user.verificationOtp) !== String(code).trim()) {
+        throw Object.assign(new Error('Invalid verification code'), { status: 401 });
+      }
 
-    user.emailVerified = true;
-    user.verificationOtp = undefined;
-    user.verificationOtpExpires = undefined;
-    await user.save();
-    return user;
+      user.emailVerified = true;
+      user.verificationOtp = undefined;
+      user.verificationOtpExpires = undefined;
+      await user.save();
+      return user;
+    } catch (error) {
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+        throw Object.assign(new Error('Verification service temporarily unavailable'), { status: 503 });
+      }
+
+      throw error;
+    }
   }
 
   // Forgot password – send reset email
@@ -172,6 +203,15 @@ class AuthService {
   // Get current user from token (used by middleware)
   static async getUserById(userId) {
     return User.findById(userId).select('-password -verificationToken -passwordResetToken');
+  }
+
+  static async refreshUserState(userId) {
+    const user = await this.getUserById(userId);
+    if (!user) {
+      return null;
+    }
+
+    return normalizeUserPayload(user);
   }
 }
 

@@ -63,7 +63,8 @@ class AuthController {
 
   // GET /api/user – get current authenticated user
   static async getCurrentUser(req, res) {
-    res.status(200).json({ success: true, data: { user: req.user } });
+    const normalizedUser = await AuthService.refreshUserState(req.user._id);
+    res.status(200).json({ success: true, data: { user: normalizedUser || req.user } });
   }
 
   // POST /api/verify-email
@@ -79,8 +80,14 @@ class AuthController {
       await AuthService.verifyEmail(token);
       res.status(200).json({ success: true, message: 'Email verified successfully' });
     } catch (error) {
-      if (error.message === 'User not found') {
+      if (error.status === 404) {
         return res.status(404).json({ success: false, message: error.message });
+      }
+      if (error.status === 400) {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      if (error.status === 503) {
+        return res.status(503).json({ success: false, message: error.message });
       }
       next(error);
     }
@@ -93,14 +100,17 @@ class AuthController {
       await AuthService.confirmEmailOtp(email, code);
       res.status(200).json({ success: true, message: 'Email verified successfully' });
     } catch (error) {
-      if (error.message === 'Invalid verification code') {
+      if (error.status === 401) {
         return res.status(401).json({ success: false, message: error.message });
       }
-      if (error.message === 'Verification code expired') {
+      if (error.status === 410) {
+        return res.status(410).json({ success: false, message: error.message });
+      }
+      if (error.status === 404) {
         return res.status(404).json({ success: false, message: error.message });
       }
-      if (error.message === 'User not found') {
-        return res.status(404).json({ success: false, message: error.message });
+      if (error.status === 503) {
+        return res.status(503).json({ success: false, message: error.message });
       }
       next(error);
     }

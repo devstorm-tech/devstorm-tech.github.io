@@ -80,7 +80,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const payload = error.response?.data;
+
+    if (status === 401) {
       clearAuthToken();
       window.dispatchEvent(new CustomEvent('authError', {
         detail: { message: 'Session expired. Please login again.' },
@@ -90,6 +93,13 @@ apiClient.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    if (status === 403 && payload?.verified === false) {
+      window.dispatchEvent(new CustomEvent('authError', {
+        detail: { message: payload.message || 'Email verification required.' },
+      }));
+    }
+
     return Promise.reject(error);
   }
 );
