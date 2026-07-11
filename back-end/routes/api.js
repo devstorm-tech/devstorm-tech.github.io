@@ -67,7 +67,7 @@ router.delete('/api/courses/:id', auth, CourseController.deleteCourse);
 router.get('/api/users', UserController.listUsers);
 router.get('/api/users/:id', UserController.getUser);
 
-router.post('/api/users', auth, userValidation, validate, UserController.createUser); 
+//router.post('/api/users', auth, userValidation, validate, UserController.createUser); 
 
 router.put('/api/users/:id', auth, userValidation, validate, UserController.updateUser);
 router.delete('/api/users/:id', auth, UserController.deleteUser);
