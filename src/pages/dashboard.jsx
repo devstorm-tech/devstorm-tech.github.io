@@ -33,6 +33,9 @@ export default function Dashboard() {
   const [userForm, setUserForm] = useState(emptyUserForm);
   const [status, setStatus] = useState('Loading admin data...');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Track which user is currently being edited
+  const [editingUserId, setEditingUserId] = useState(null);
 
   const authToken = useMemo(() => localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '', []);
 
@@ -105,7 +108,7 @@ export default function Dashboard() {
     }
   };
 
-  // 1. Updated path to explicitly map to your router configuration: /api/users
+
   const loadUsers = async () => {
     try {
       const data = await apiFetch('/users');
@@ -154,26 +157,50 @@ export default function Dashboard() {
     }
   };
 
-  // 2. Updated to point to /api/users and attached application/json + Bearer token headers for your backend auth / validate layers
+  // Handles both POST (Create) and PUT (Update) for users
   const handleUserSubmit = async (event) => {
     event.preventDefault();
     setIsSaving(true);
-    setStatus('Creating user...');
 
     try {
-      const result = await apiFetch('/api/users', { 
-        method: 'POST', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        data: userForm // axios apiClient uses 'data' instead of stringified 'body'
-      });
-      setUsers(prev => [result.data || result, ...prev]);
+      if (editingUserId) {
+        setStatus('Updating user...');
+        
+        // If password is left blank during update, remove it from payload so it doesn't accidentally overwrite or error out
+        const updatePayload = { ...userForm };
+        if (!updatePayload.password) {
+          delete updatePayload.password;
+        }
+
+        const result = await apiFetch(`/users/${editingUserId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          data: updatePayload
+        });
+
+        const updatedUser = result.data || result;
+        setUsers(prev => prev.map(u => (u._id === editingUserId || u.id === editingUserId ? updatedUser : u)));
+        setEditingUserId(null);
+        setStatus('User updated successfully.');
+      } else {
+        setStatus('Creating user...');
+        const result = await apiFetch('/users', { 
+          method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          data: userForm
+        });
+        setUsers(prev => [result.data || result, ...prev]);
+        setStatus('User created successfully.');
+      }
       setUserForm(emptyUserForm);
-      setStatus('User created successfully.');
     } catch (error) {
-      setStatus(`User create failed: ${error.message}`);
+      setStatus(`User save failed: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -189,20 +216,42 @@ export default function Dashboard() {
     }
   };
 
-  // 3. Implemented delete user execution map to match router.delete('/api/users/:id', auth, ...)
+  
   const deleteUser = async (id) => {
     try {
-      await apiFetch(`/api/users/${id}`, {
+      await apiFetch(`/users/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
       });
       setUsers(prev => prev.filter(user => user._id !== id && user.id !== id));
+      if (editingUserId === id) {
+        setEditingUserId(null);
+        setUserForm(emptyUserForm);
+      }
       setStatus('User deleted.');
     } catch (error) {
       setStatus(`User delete failed: ${error.message}`);
     }
+  };
+
+  // Triggered when clicking the Edit button on a user item
+  const startEditUser = (user) => {
+    const id = user._id || user.id;
+    setEditingUserId(id);
+    setUserForm({
+      name: user.name || '',
+      email: user.email || '',
+      password: '', // Kept empty for security unless they type a new one
+    });
+    setStatus(`Editing user: ${user.name}`);
+  };
+
+  const cancelEditUser = () => {
+    setEditingUserId(null);
+    setUserForm(emptyUserForm);
+    setStatus('User edit cancelled.');
   };
 
   return (
@@ -321,7 +370,7 @@ export default function Dashboard() {
           ) : (
             <>
               <div className="dashboard-card">
-                <h3>Create User</h3>
+                <h3>{editingUserId ? 'Edit User' : 'Create User'}</h3>
                 <form onSubmit={handleUserSubmit}>
                   <div className="dashboard-grid two">
                     <div>
@@ -333,12 +382,19 @@ export default function Dashboard() {
                       <input type="email" className="dashboard-input" value={userForm.email} onChange={(event) => handleUserInputChange('email', event.target.value)} required />
                     </div>
                     <div>
-                      <label className="dashboard-label">Password</label>
-                      <input type="password" className="dashboard-input" value={userForm.password} onChange={(event) => handleUserInputChange('password', event.target.value)} required />
+                      <label className="dashboard-label font-small">Password {editingUserId && '(Leave blank to keep same)'}</label>
+                      <input type="password" className="dashboard-input" value={userForm.password} onChange={(event) => handleUserInputChange('password', event.target.value)} required={!editingUserId} />
                     </div>
                   </div>
-                  <div className="dashboard-actions">
-                    <button className="dashboard-btn primary" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Create User'}</button>
+                  <div className="dashboard-actions" style={{ gap: '0.75rem' }}>
+                    <button className="dashboard-btn primary" type="submit" disabled={isSaving}>
+                      {isSaving ? 'Saving...' : editingUserId ? 'Update User' : 'Create User'}
+                    </button>
+                    {editingUserId && (
+                      <button className="dashboard-btn secondary" type="button" onClick={cancelEditUser}>
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>
@@ -362,7 +418,14 @@ export default function Dashboard() {
                           <td>{user.email}</td>
                           <td>{user.emailVerified ? 'Verified' : 'Pending'}</td>
                           <td>
-                            <button className="dashboard-btn danger" onClick={() => deleteUser(user._id || user.id)}>Delete</button>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button className="dashboard-btn primary" style={{ backgroundColor: '#0284c7' }} onClick={() => startEditUser(user)}>
+                                Edit
+                              </button>
+                              <button className="dashboard-btn danger" onClick={() => deleteUser(user._id || user.id)}>
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

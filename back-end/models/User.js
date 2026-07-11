@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false, // don't return password by default
     },
+    role:{
+      type:String,
+      required:[true,'role is required'],
+      default:'user',
+      trim:true,
+    },
     emailVerified: {
       type: Boolean,
       default: false,
