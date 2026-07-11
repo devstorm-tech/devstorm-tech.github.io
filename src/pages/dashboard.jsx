@@ -23,7 +23,6 @@ const emptyUserForm = {
   name: '',
   email: '',
   password: '',
-  role: 'student',
 };
 
 export default function Dashboard() {
@@ -337,13 +336,6 @@ export default function Dashboard() {
                       <label className="dashboard-label">Password</label>
                       <input type="password" className="dashboard-input" value={userForm.password} onChange={(event) => handleUserInputChange('password', event.target.value)} required />
                     </div>
-                    <div>
-                      <label className="dashboard-label">Role</label>
-                      <select className="dashboard-select" value={userForm.role} onChange={(event) => handleUserInputChange('role', event.target.value)}>
-                        <option value="student">Student</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </div>
                   </div>
                   <div className="dashboard-actions">
                     <button className="dashboard-btn primary" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Create User'}</button>
@@ -359,7 +351,6 @@ export default function Dashboard() {
                       <tr>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Role</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -369,7 +360,6 @@ export default function Dashboard() {
                         <tr key={user._id || user.id}>
                           <td>{user.name}</td>
                           <td>{user.email}</td>
-                          <td>{user.role || 'student'}</td>
                           <td>{user.emailVerified ? 'Verified' : 'Pending'}</td>
                           <td>
                             <button className="dashboard-btn danger" onClick={() => deleteUser(user._id || user.id)}>Delete</button>
