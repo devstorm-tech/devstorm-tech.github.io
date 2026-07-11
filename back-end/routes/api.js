@@ -1,7 +1,7 @@
 const express = require('express');
 const AuthController = require('../controllers/AuthController');
 const CourseController = require('../controllers/CourseController');
-const UserController = require('../controllers/UserController');
+const UserController = require('../controllers/UserController')
 const auth = require('../middleware/auth');
 const { setCsrfCookie } = require('../middleware/csrf');
 const {
@@ -67,10 +67,10 @@ router.delete('/api/courses/:id', auth, CourseController.deleteCourse);
 router.get('/api/users', UserController.listUsers);
 router.get('/api/users/:id', UserController.getUser);
 
-//router.post('/api/users', auth, userValidation, validate, UserController.createUser); 
+router.post('/api/users', UserController.createUser); 
 
-router.put('/api/users/:id', auth, userValidation, validate, UserController.updateUser);
-router.delete('/api/users/:id', auth, UserController.deleteUser);
+router.put('/api/users/:id', UserController.updateUser);
+router.delete('/api/users/:id', UserController.deleteUser);
 
 
 module.exports = router;
