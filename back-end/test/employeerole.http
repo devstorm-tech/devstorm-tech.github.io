@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:8000/api
+@userId = 6a57823645186bd3a3c73cde
+
+### 1. Get All Available Employee Roles
+# Use this to fetch the list of seeded roles and copy a valid role ID for the next steps.
+GET {{baseUrl}}/employee-roles
+Content-Type: application/json
+
+###
+
+### 2. Assign a Valid Employee Role to User
+# Replace the value of `employeeRole` below with an '_id' from the list fetched in Step 1.
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "employeeRole": "6a5767e364c1b56f9117bc09"
+}
+
+###
+
+### 3. Clear/Demote a User's Employee Role
+# This removes their role and automatically resets their system status 'role' back to 'user'.
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "employeeRole": null
+}
+
+###
+
+### 4. Test Validation with an Invalid/Fake Role ID
+# This should safely fail and return an error because the role ID doesn't exist in MongoDB.
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "employeeRole": "6a562901f111244cd7438f00"
+}

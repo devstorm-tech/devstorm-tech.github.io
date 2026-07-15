@@ -1,7 +1,8 @@
 const express = require('express');
 const AuthController = require('../controllers/AuthController');
 const CourseController = require('../controllers/CourseController');
-const UserController = require('../controllers/UserController')
+const UserController = require('../controllers/UserController');
+const EmployeeRoleController = require('../controllers/EmployeeRoleController'); // Import the new controller
 const auth = require('../middleware/auth');
 const { ensureEmailIsVerified, isAdmin } = require('../middleware/ensureEmailIsVerified');
 const { setCsrfCookie, validateCsrf } = require('../middleware/csrf');
@@ -94,11 +95,14 @@ router.get('/api/admin/dashboard', auth, isAdmin, (req, res) => {
 // User routes
 router.get('/api/users', UserController.listUsers);
 router.get('/api/users/:id', UserController.getUser);
-
 router.post('/api/users', validateCsrf, UserController.createUser); 
-
 router.put('/api/users/:id', validateCsrf, UserController.updateUser);
 router.delete('/api/users/:id', validateCsrf, UserController.deleteUser);
 
+// ==========================================
+// Employee Role Routes (NEW)
+// ==========================================
+// Public/User accessible endpoint to fetch role definitions for UI dropdown lists
+router.get('/api/employee-roles', EmployeeRoleController.getAllRoles);
 
 module.exports = router;

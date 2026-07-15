@@ -41,16 +41,23 @@ class UserController {
     }
   }
 
-  static async updateUser(req, res, next) {
+static async updateUser(req, res, next) {
     try {
       const user = await UserService.updateUser(req.params.id, req.body);
       
       if (!user) {
         return res.status(404).json({ success: false, message: 'User not found' });
       }
+
+      // Populate the newly assigned employee role details (title, department, tier, etc.)
+      if (user.employeeRole) {
+        await user.populate('employeeRole');
+      }
       
       res.status(200).json({ success: true, data: user });
     } catch (error) {
+      // Any error thrown by the service (like an invalid Role ID) is caught here 
+      // and passed to your global error middleware
       next(error);
     }
   }

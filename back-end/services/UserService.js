@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const EmployeeRole = require('../models/EmployeeRole');
 
 const normalizeUserPayload = (payload = {}) => ({
   name: payload.name?.trim(),
@@ -46,7 +47,7 @@ class UserService {
     return user.save();
   }
 
-  static async updateUser(id, payload) {
+static async updateUser(id, payload) {
     // Crucial adjustment for models using pre('save') hooks:
     // Mongoose update queries like findByIdAndUpdate do NOT trigger pre('save') hooks normally.
     // To update passwords securely or run validations properly, we find the document first.
@@ -54,13 +55,46 @@ class UserService {
     if (!user) return null;
 
     if (payload.name !== undefined) user.name = payload.name.trim();
-    if (payload.role !== undefined) user.role = payload.role.trim();
     if (payload.email !== undefined) user.email = payload.email.trim().toLowerCase();
     if (payload.emailVerified !== undefined) user.emailVerified = Boolean(payload.emailVerified);
     
     // If the dashboard allows password changes, this correctly flags it for re-hashing
     if (payload.password) {
       user.password = payload.password;
+    }
+
+    // --- EMPLOYEE ROLE UPDATE LOGIC ---
+    if (payload.employeeRole !== undefined) {
+      const roleId = payload.employeeRole;
+
+      if (!roleId || roleId === 'null') {
+        // Clear the employee role association
+        user.employeeRole = null;
+        
+        // Revert system role to 'user' if they were previously an 'employee' 
+        // (We don't demote 'admin' accounts automatically)
+        if (user.role === 'employee') {
+          user.role = 'user';
+        }
+      } else {
+        // Verify that the EmployeeRole exists in the database before assigning
+        const roleExists = await EmployeeRole.findById(roleId);
+        if (!roleExists) {
+          throw new Error('The specified employee role does not exist.');
+        }
+
+        user.employeeRole = roleExists._id;
+
+        // Auto-upgrade system role to 'employee' if they are a regular 'user'
+        if (user.role === 'user') {
+          user.role = 'employee';
+        }
+      }
+    }
+
+    // Allow manual role overrides (e.g. manually promoting to 'admin') if explicitly passed
+    if (payload.role !== undefined) {
+      user.role = payload.role.trim();
     }
 
     return user.save();

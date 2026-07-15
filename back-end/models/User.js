@@ -22,11 +22,17 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false, // don't return password by default
     },
-    role:{
-      type:String,
-      required:[true,'role is required'],
-      default:'user',
-      trim:true,
+    role: {
+      type: String,
+      required: [true, 'role is required'],
+      default: 'user', // "user", "admin", or "employee"
+      trim: true,
+    },
+    // The relationship link: One-to-Many
+    employeeRole: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'EmployeeRole',
+      default: null, // Default to null for standard public users
     },
     emailVerified: {
       type: Boolean,
