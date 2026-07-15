@@ -6,6 +6,10 @@ const normalizeUserPayload = (payload = {}) => ({
   email: payload.email?.trim().toLowerCase(),
   password: payload.password, // Mongoose pre-save hook will handle hashing if modified
   emailVerified: Boolean(payload.emailVerified ?? false),
+  
+  // FIXED: Allow employeeRole to pass through during user creation
+  employeeRole: payload.employeeRole || undefined,
+
   verificationToken: payload.verificationToken || undefined,
   verificationTokenExpires: payload.verificationTokenExpires || undefined,
   verificationOtp: payload.verificationOtp || undefined,
@@ -30,11 +34,14 @@ class UserService {
     }
 
     const sort = query.sort === 'newest' ? { createdAt: -1 } : { name: 1 };
-    return User.find(filters).sort(sort); // Password field is auto-excluded by schema select: false
+    
+    // FIXED: Added .populate('employeeRole') to pull the full role details
+    return User.find(filters).sort(sort).populate('employeeRole');
   }
 
   static async getUserById(id) {
-    return User.findById(id);
+    // FIXED: Added .populate('employeeRole') to ensure single fetches include the role details
+    return User.findById(id).populate('employeeRole');
   }
 
   static async getUserByEmail(email) {
@@ -47,7 +54,7 @@ class UserService {
     return user.save();
   }
 
-static async updateUser(id, payload) {
+  static async updateUser(id, payload) {
     // Crucial adjustment for models using pre('save') hooks:
     // Mongoose update queries like findByIdAndUpdate do NOT trigger pre('save') hooks normally.
     // To update passwords securely or run validations properly, we find the document first.

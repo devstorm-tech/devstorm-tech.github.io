@@ -23,17 +23,20 @@ const emptyUserForm = {
   name: '',
   email: '',
   password: '',
+  role: 'user',
+  employeeRole: '', // will hold the selected role ID or empty for 'None'
 };
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('courses');
   const [courses, setCourses] = useState([]);
   const [users, setUsers] = useState([]);
+  const [employeeRoles, setEmployeeRoles] = useState([]); // new state
   const [courseForm, setCourseForm] = useState(emptyCourseForm);
   const [userForm, setUserForm] = useState(emptyUserForm);
   const [status, setStatus] = useState('Loading admin data...');
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Track which user is currently being edited
   const [editingUserId, setEditingUserId] = useState(null);
 
@@ -108,7 +111,6 @@ export default function Dashboard() {
     }
   };
 
-
   const loadUsers = async () => {
     try {
       const data = await apiFetch('/users');
@@ -118,9 +120,20 @@ export default function Dashboard() {
     }
   };
 
+  // New function to fetch employee roles
+  const loadEmployeeRoles = async () => {
+    try {
+      const data = await apiFetch('/employee-roles');
+      setEmployeeRoles(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
+    } catch (error) {
+      setStatus(`Could not load employee roles: ${error.message}`);
+    }
+  };
+
   useEffect(() => {
     loadCourses();
     loadUsers();
+    loadEmployeeRoles(); // fetch roles on mount
   }, []);
 
   const handleCourseInputChange = (field, value) => {
@@ -163,22 +176,26 @@ export default function Dashboard() {
     setIsSaving(true);
 
     try {
+      // Prepare payload: copy form values and handle employeeRole
+      const payload = { ...userForm };
+
+      // If password is empty during update, remove it
+      if (editingUserId && !payload.password) {
+        delete payload.password;
+      }
+
+      // Convert employeeRole: empty string => null, otherwise keep the selected ID
+      payload.employeeRole = payload.employeeRole ? payload.employeeRole : null;
+
       if (editingUserId) {
         setStatus('Updating user...');
-        
-        // If password is left blank during update, remove it from payload so it doesn't accidentally overwrite or error out
-        const updatePayload = { ...userForm };
-        if (!updatePayload.password) {
-          delete updatePayload.password;
-        }
-
         const result = await apiFetch(`/users/${editingUserId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${authToken}`
           },
-          data: updatePayload
+          data: payload
         });
 
         const updatedUser = result.data || result;
@@ -187,13 +204,13 @@ export default function Dashboard() {
         setStatus('User updated successfully.');
       } else {
         setStatus('Creating user...');
-        const result = await apiFetch('/users', { 
-          method: 'POST', 
+        const result = await apiFetch('/users', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${authToken}`
           },
-          data: userForm
+          data: payload
         });
         setUsers(prev => [result.data || result, ...prev]);
         setStatus('User created successfully.');
@@ -215,7 +232,6 @@ export default function Dashboard() {
       setStatus(`Course delete failed: ${error.message}`);
     }
   };
-
 
   const deleteUser = async (id) => {
     try {
@@ -240,11 +256,13 @@ export default function Dashboard() {
   const startEditUser = (user) => {
     const id = user._id || user.id;
     setEditingUserId(id);
+    // Populate form, including employeeRole if present
     setUserForm({
       name: user.name || '',
       email: user.email || '',
       role: user.role || 'user',
-      password: '', // Kept empty for security unless they type a new one
+      password: '', // Kept empty for security
+      employeeRole: user.employeeRole?._id || user.employeeRole || '', // handle both populated and raw ID
     });
     setStatus(`Editing user: ${user.name}`);
   };
@@ -264,8 +282,18 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-tabs">
-          <button className={`dashboard-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>Courses Management</button>
-          <button className={`dashboard-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Users Management</button>
+          <button
+            className={`dashboard-tab ${activeTab === 'courses' ? 'active' : ''}`}
+            onClick={() => setActiveTab('courses')}
+          >
+            Courses Management
+          </button>
+          <button
+            className={`dashboard-tab ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            Users Management
+          </button>
         </div>
 
         <div className="dashboard-content">
@@ -277,19 +305,37 @@ export default function Dashboard() {
                   <div className="dashboard-grid two">
                     <div>
                       <label className="dashboard-label">Title</label>
-                      <input className="dashboard-input" value={courseForm.title} onChange={(event) => handleCourseInputChange('title', event.target.value)} required />
+                      <input
+                        className="dashboard-input"
+                        value={courseForm.title}
+                        onChange={(event) => handleCourseInputChange('title', event.target.value)}
+                        required
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Category</label>
-                      <input className="dashboard-input" value={courseForm.category} onChange={(event) => handleCourseInputChange('category', event.target.value)} required />
+                      <input
+                        className="dashboard-input"
+                        value={courseForm.category}
+                        onChange={(event) => handleCourseInputChange('category', event.target.value)}
+                        required
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Instructor</label>
-                      <input className="dashboard-input" value={courseForm.instructor} onChange={(event) => handleCourseInputChange('instructor', event.target.value)} />
+                      <input
+                        className="dashboard-input"
+                        value={courseForm.instructor}
+                        onChange={(event) => handleCourseInputChange('instructor', event.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Level</label>
-                      <select className="dashboard-select" value={courseForm.level} onChange={(event) => handleCourseInputChange('level', event.target.value)}>
+                      <select
+                        className="dashboard-select"
+                        value={courseForm.level}
+                        onChange={(event) => handleCourseInputChange('level', event.target.value)}
+                      >
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
                         <option value="Advanced">Advanced</option>
@@ -297,50 +343,97 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <label className="dashboard-label">Price</label>
-                      <input type="number" className="dashboard-input" value={courseForm.price} onChange={(event) => handleCourseInputChange('price', event.target.value)} />
+                      <input
+                        type="number"
+                        className="dashboard-input"
+                        value={courseForm.price}
+                        onChange={(event) => handleCourseInputChange('price', event.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Discount Price</label>
-                      <input type="number" className="dashboard-input" value={courseForm.discount_price} onChange={(event) => handleCourseInputChange('discount_price', event.target.value)} />
+                      <input
+                        type="number"
+                        className="dashboard-input"
+                        value={courseForm.discount_price}
+                        onChange={(event) => handleCourseInputChange('discount_price', event.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Duration</label>
-                      <input className="dashboard-input" value={courseForm.duration} onChange={(event) => handleCourseInputChange('duration', event.target.value)} />
+                      <input
+                        className="dashboard-input"
+                        value={courseForm.duration}
+                        onChange={(event) => handleCourseInputChange('duration', event.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Lessons</label>
-                      <input type="number" className="dashboard-input" value={courseForm.lessons} onChange={(event) => handleCourseInputChange('lessons', event.target.value)} />
+                      <input
+                        type="number"
+                        className="dashboard-input"
+                        value={courseForm.lessons}
+                        onChange={(event) => handleCourseInputChange('lessons', event.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Students</label>
-                      <input type="number" className="dashboard-input" value={courseForm.students} onChange={(event) => handleCourseInputChange('students', event.target.value)} />
+                      <input
+                        type="number"
+                        className="dashboard-input"
+                        value={courseForm.students}
+                        onChange={(event) => handleCourseInputChange('students', event.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Rating</label>
-                      <input type="number" step="0.1" className="dashboard-input" value={courseForm.rating} onChange={(event) => handleCourseInputChange('rating', event.target.value)} />
+                      <input
+                        type="number"
+                        step="0.1"
+                        className="dashboard-input"
+                        value={courseForm.rating}
+                        onChange={(event) => handleCourseInputChange('rating', event.target.value)}
+                      />
                     </div>
                   </div>
                   <div style={{ marginTop: '1rem' }}>
                     <label className="dashboard-label">Description</label>
-                    <textarea className="dashboard-textarea" value={courseForm.description} onChange={(event) => handleCourseInputChange('description', event.target.value)} required />
+                    <textarea
+                      className="dashboard-textarea"
+                      value={courseForm.description}
+                      onChange={(event) => handleCourseInputChange('description', event.target.value)}
+                      required
+                    />
                   </div>
                   <div style={{ marginTop: '1rem' }}>
                     <label className="dashboard-label">Topics (comma separated)</label>
-                    <input className="dashboard-input" value={courseForm.topics} onChange={(event) => handleCourseInputChange('topics', event.target.value)} />
+                    <input
+                      className="dashboard-input"
+                      value={courseForm.topics}
+                      onChange={(event) => handleCourseInputChange('topics', event.target.value)}
+                    />
                   </div>
                   <div className="dashboard-actions">
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input type="checkbox" checked={courseForm.featured} onChange={(event) => handleCourseInputChange('featured', event.target.checked)} />
+                      <input
+                        type="checkbox"
+                        checked={courseForm.featured}
+                        onChange={(event) => handleCourseInputChange('featured', event.target.checked)}
+                      />
                       Featured
                     </label>
-                    <button className="dashboard-btn primary" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Create Course'}</button>
+                    <button className="dashboard-btn primary" type="submit" disabled={isSaving}>
+                      {isSaving ? 'Saving...' : 'Create Course'}
+                    </button>
                   </div>
                 </form>
               </div>
 
               <div className="dashboard-card">
                 <h3>Existing Courses</h3>
-                {courses.length === 0 ? <div className="dashboard-empty">No courses yet.</div> : (
+                {courses.length === 0 ? (
+                  <div className="dashboard-empty">No courses yet.</div>
+                ) : (
                   <table className="dashboard-table">
                     <thead>
                       <tr>
@@ -359,7 +452,9 @@ export default function Dashboard() {
                           <td>{course.level}</td>
                           <td>${Number(course.price || 0).toFixed(2)}</td>
                           <td>
-                            <button className="dashboard-btn danger" onClick={() => deleteCourse(course._id || course.id)}>Delete</button>
+                            <button className="dashboard-btn danger" onClick={() => deleteCourse(course._id || course.id)}>
+                              Delete
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -376,26 +471,61 @@ export default function Dashboard() {
                   <div className="dashboard-grid two">
                     <div>
                       <label className="dashboard-label">Name</label>
-                      <input className="dashboard-input" value={userForm.name} onChange={(event) => handleUserInputChange('name', event.target.value)} required />
+                      <input
+                        className="dashboard-input"
+                        value={userForm.name}
+                        onChange={(event) => handleUserInputChange('name', event.target.value)}
+                        required
+                      />
                     </div>
                     <div>
                       <label className="dashboard-label">Email</label>
-                      <input type="email" className="dashboard-input" value={userForm.email} onChange={(event) => handleUserInputChange('email', event.target.value)} required />
+                      <input
+                        type="email"
+                        className="dashboard-input"
+                        value={userForm.email}
+                        onChange={(event) => handleUserInputChange('email', event.target.value)}
+                        required
+                      />
                     </div>
                     <div>
-                      <label className="dashboard-label font-small">Password {editingUserId && '(Leave blank to keep same)'}</label>
-                      <input type="password" className="dashboard-input" value={userForm.password} onChange={(event) => handleUserInputChange('password', event.target.value)} required={!editingUserId} />
+                      <label className="dashboard-label font-small">
+                        Password {editingUserId && '(Leave blank to keep same)'}
+                      </label>
+                      <input
+                        type="password"
+                        className="dashboard-input"
+                        value={userForm.password}
+                        onChange={(event) => handleUserInputChange('password', event.target.value)}
+                        required={!editingUserId}
+                      />
                     </div>
                     <div>
-                      <label className="dashboard-label">Role</label>
-                      <select 
-                        className="dashboard-select" 
-                        value={userForm.role || 'user'} 
-                        onChange={(event) => handleUserInputChange('role', event.target.value)}>
+                      <label className="dashboard-label">System Role</label>
+                      <select
+                        className="dashboard-select"
+                        value={userForm.role || 'user'}
+                        onChange={(event) => handleUserInputChange('role', event.target.value)}
+                      >
                         <option value="user">User</option>
                         <option value="student">Student</option>
                         <option value="admin">Admin</option>
                         <option value="instructor">Instructor</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="dashboard-label">Employee Role</label>
+                      <select
+                        className="dashboard-select"
+                        value={userForm.employeeRole || ''}
+                        onChange={(event) => handleUserInputChange('employeeRole', event.target.value)}
+                      >
+                        <option value="">None</option>
+                        {employeeRoles.map((role) => (
+                          <option key={role._id || role.id} value={role._id || role.id}>
+                            {role.title} {role.tier ? `(Tier ${role.tier})` : ''}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -414,13 +544,17 @@ export default function Dashboard() {
 
               <div className="dashboard-card">
                 <h3>Registered Users</h3>
-                {users.length === 0 ? <div className="dashboard-empty">No users yet.</div> : (
+                {users.length === 0 ? (
+                  <div className="dashboard-empty">No users yet.</div>
+                ) : (
                   <table className="dashboard-table">
                     <thead>
                       <tr>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Status</th>
+                        <th>System Role</th>
+                        <th>Employee Role</th>
+                        <th>Verified</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -430,13 +564,21 @@ export default function Dashboard() {
                           <td>{user.name}</td>
                           <td>{user.email}</td>
                           <td>{user.role}</td>
+                          <td>{user.employeeRole?.title || 'None'}</td>
                           <td>{user.emailVerified ? 'Verified' : 'Pending'}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button className="dashboard-btn primary" style={{ backgroundColor: '#0284c7' }} onClick={() => startEditUser(user)}>
+                              <button
+                                className="dashboard-btn primary"
+                                style={{ backgroundColor: '#0284c7' }}
+                                onClick={() => startEditUser(user)}
+                              >
                                 Edit
                               </button>
-                              <button className="dashboard-btn danger" onClick={() => deleteUser(user._id || user.id)}>
+                              <button
+                                className="dashboard-btn danger"
+                                onClick={() => deleteUser(user._id || user.id)}
+                              >
                                 Delete
                               </button>
                             </div>
